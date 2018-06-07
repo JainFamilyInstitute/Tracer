@@ -7,7 +7,7 @@ from functions import *
 from constants import *
 
 
-def dp_solver(Y, prob):
+def dp_solver(Y, prob, GAMMA, N_SIM):
     ###########################################################################
     #                                Setup                                    #
     ###########################################################################
@@ -48,7 +48,7 @@ def dp_solver(Y, prob):
             savings_incr = savings * (1 + R)
             savings_incr = savings_incr[None].T
 
-            expected_value = exp_val_new(Y[:, t], savings_incr, grid_w, v[0, :])
+            expected_value = exp_val_new(Y[:, t], savings_incr, grid_w, v[0, :], N_SIM)
 
             v_array = u_r + DELTA * prob[t] * expected_value    # v_array has size N_C-by-1
             v[1, i] = np.max(v_array)

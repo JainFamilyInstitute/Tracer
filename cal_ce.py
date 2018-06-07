@@ -21,7 +21,7 @@ def c_func(c_df, w, age):
     return c
 
 
-def generate_consumption_process(inc, c_func_df):
+def generate_consumption_process(inc, c_func_df, N_SIM):
     """ Calculating the certainty equivalent annual consumption and life time wealth"""
 
     YEARS = END_AGE - START_AGE + 1
@@ -54,7 +54,7 @@ def generate_consumption_process(inc, c_func_df):
     return c, inc
 
 
-def cal_certainty_equi(prob, c):
+def cal_certainty_equi(prob, c, GAMMA):
 
     # discount factor
     YEARS = END_AGE - START_AGE + 1

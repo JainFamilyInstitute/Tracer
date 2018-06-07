@@ -10,11 +10,11 @@ UPPER_BOUND_W = 15000000    # upper bound of wealth
 EXPAND_FAC = 3
 N_C = 1501
 LOWER_BOUND_C = 0
-GAMMA = 2                 # risk preference parameter
+# GAMMA = 2                 # risk preference parameter
 R = 0.02                  # risk-free rate
 DELTA = 0.99              # discount factor
 MU = 0                    # expectation of income shocks
-N_SIM = 10000            # number of draws
+# N_SIM = 10000            # number of draws
 INIT_WEALTH = 0
 
 AltDeg = 4
