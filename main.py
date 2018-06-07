@@ -35,7 +35,7 @@ def run_model(search_args):
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran)
+    #adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran)
     c_proc, _ = generate_consumption_process(adj_income, c_func_df)
 
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
