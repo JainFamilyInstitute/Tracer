@@ -10,7 +10,7 @@ import multiprocessing as mp
 import itertools
 
 
-def run_model(TERMrho, gamma):
+def run_model(TERMrho, gamma, surv_prob, base_path, income_bf_ret, income_ret, sigma_perm, sigma_tran):
 
     TERM = int(TERMrho[0])
     rho = TERMrho[1]
@@ -43,61 +43,63 @@ def run_model(TERMrho, gamma):
     print(f"------ {time.time() - start} seconds ------")
     return TERM, rho, gamma, c_ce
 
+def main(version, gamma_max, gamma_step):
+    assert version=='ISA'
+    start_time = time.time()
 
-start_time = time.time()
+    ###########################################################################
+    #                      Setup - file path & raw data                       #
+    ###########################################################################
+    # set file path
+    income_fn = 'age_coefficients_and_var.xlsx'
+    surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
+    isa_fn = 'Loop on term and rho.xlsx'
+    base_path = os.path.dirname(__file__)
+    income_fp = os.path.join(base_path, 'data', income_fn)
+    mortal_fp = os.path.join(base_path, 'data', surviv_fn)
+    isa_fp = os.path.join(base_path, 'data', isa_fn)
+    ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
-###########################################################################
-#                      Setup - file path & raw data                       #
-###########################################################################
-# set file path
-income_fn = 'age_coefficients_and_var.xlsx'
-surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
-isa_fn = 'Loop on term and rho_0.12.xlsx'
-base_path = os.path.dirname(__file__)
-income_fp = os.path.join(base_path, 'data', income_fn)
-mortal_fp = os.path.join(base_path, 'data', surviv_fn)
-isa_fp = os.path.join(base_path, 'data', isa_fn)
-ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
-
-# read raw data
-age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
-
-
-###########################################################################
-#              Setup - income process & std & survival prob               #
-###########################################################################
-income_bf_ret = cal_income(age_coeff)
-income_ret = income_bf_ret[-1]
-
-# get std
-sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
-sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
-
-# read isa params
-isa_params = pd.read_excel(isa_fp)
-isa_params = isa_params[["Term", "1-rho"]].copy()
-isa_params = isa_params.loc[isa_params['1-rho'] > 0.5]
-# isa_params = isa_params[isa_params['Term']==15].copy()
-# isa_params = isa_params.iloc[7:9, :]
-gamma_arr = np.arange(1, 8.1, 1)
-
-search_args = list(itertools.product(isa_params.values, gamma_arr))
-
-with mp.Pool(processes=mp.cpu_count()) as p:
-    c_ce = p.starmap(run_model, search_args)
-
-c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'Gamma', 'Consumption CE'])
-c_ce_df.to_excel(ce_fp)
+    # read raw data
+    age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
 
 
-# Params check
-print("--- %s seconds ---" % (time.time() - start_time))
-print('AltDeg: ', AltDeg)
-print('permanent shock: ', sigma_perm)
-print('transitory shock: ', sigma_tran)
-print('lambda: ', ret_frac[AltDeg])
-print('theta: ',  unemp_frac[AltDeg])
-print('pi: ', unempl_rate[AltDeg])
-print('W0: ', INIT_WEALTH)
+    ###########################################################################
+    #              Setup - income process & std & survival prob               #
+    ###########################################################################
+    income_bf_ret = cal_income(age_coeff)
+    income_ret = income_bf_ret[-1]
+
+    # get std
+    sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
+    sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
+
+    # read isa params
+    isa_params = pd.read_excel(isa_fp)
+    isa_params = isa_params[["Term", "1-rho"]].copy()
+    isa_params = isa_params.loc[isa_params['1-rho'] > 0.5]
+    # isa_params = isa_params[isa_params['Term']==15].copy()
+    # isa_params = isa_params.iloc[7:9, :]
+    gamma_arr = np.arange(1, gamma_max, gamma_step)
+    fixed_args = [[x] for x in [surv_prob, base_path, income_bf_ret, income_ret, sigma_perm, sigma_tran]]
+
+    search_args = list(itertools.product(isa_params.values, gamma_arr, *fixed_args))
+
+    with mp.Pool(processes=mp.cpu_count()) as p:
+        c_ce = p.starmap(run_model, search_args)
+
+    c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'Gamma', 'Consumption CE'])
+    c_ce_df.to_excel(ce_fp)
+
+
+    # Params check
+    print("--- %s seconds ---" % (time.time() - start_time))
+    print('AltDeg: ', AltDeg)
+    print('permanent shock: ', sigma_perm)
+    print('transitory shock: ', sigma_tran)
+    print('lambda: ', ret_frac[AltDeg])
+    print('theta: ',  unemp_frac[AltDeg])
+    print('pi: ', unempl_rate[AltDeg])
+    print('W0: ', INIT_WEALTH)
 
 
