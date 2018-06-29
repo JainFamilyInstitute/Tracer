@@ -7,7 +7,7 @@ RETIRE_AGE = 65           # retirement age
 N_W = 501
 LOWER_BOUND_W = 1         # lower bound of wealth
 UPPER_BOUND_W = 15000000    # upper bound of wealth
-EXPAND_FAC = 3
+#EXPAND_FAC = 3
 N_C = 1501
 LOWER_BOUND_C = 0
 # GAMMA = 2                 # risk preference parameter
@@ -53,3 +53,15 @@ TERM = 10
 
 # ppt
 rate = 0.07
+
+#expanding factor
+gamma_exp_frac = {
+    1: 3,
+    2: 3,
+    3: 4,
+    4: 4,
+    5: 5,
+    6: 5,
+    7: 5,
+    8: 5,
+}
