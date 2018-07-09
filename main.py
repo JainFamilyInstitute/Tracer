@@ -42,8 +42,12 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
 
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
 
-    print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
-    return principal, ppt_bar, c_ce
+    ##Expanding Factor
+    print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+    print(f"------ {time.time() - start} seconds ------")
+    
+    #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
+    return principal, ppt_bar, gamma, c_ce
 
 def main(version, gamma, n_sim):
     assert version == 'DEBT'
