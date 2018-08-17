@@ -81,7 +81,7 @@ def main(version, gamma_max, gamma_step):
     # isa_params = isa_params[isa_params['Term']==15].copy()
     # isa_params = isa_params.iloc[7:9, :]
     #Gamma Min set to 1, change here
-    gamma_arr = np.arange(4, gamma_max, gamma_step)
+    gamma_arr = np.arange(1, gamma_max, gamma_step)
     fixed_args = [[x] for x in [surv_prob, base_path, income_bf_ret, income_ret, sigma_perm, sigma_tran]]
 
     search_args = list(itertools.product(isa_params.values, gamma_arr, *fixed_args))
