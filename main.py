@@ -28,10 +28,12 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     ###########################################################################
     c_func_fp = os.path.join(base_path, 'results', f'c function_DEBT_{ppt_bar}.xlsx')
     v_func_fp = os.path.join(base_path, 'results', f'v function_DEBT_{ppt_bar}.xlsx')
+    # shortcut:
+    # c_func_df = pd.read_excel(c_func_fp)
+    # v_func_df = pd.read_excel(v_func_fp)
     c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
     c_func_df.to_excel(c_func_fp)
     v_func_df.to_excel(v_func_fp)
-
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
@@ -45,7 +47,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     ##Expanding Factor
     print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
-    
+
     #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
     return principal, ppt_bar, gamma, c_ce
 
@@ -94,7 +96,7 @@ def main(version, gamma, n_sim):
     # for i in range(len(gamma_arr)):
     #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
 
-    c_ce_df = pd.DataFrame(c_ce, columns=['principal', 'ppt_bar', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['principal', 'ppt_bar', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
 
