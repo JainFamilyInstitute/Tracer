@@ -6,6 +6,7 @@ from functions import *
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
 from constants import *
+from datetime import datetime
 
 import multiprocessing as mp
 import itertools
@@ -27,8 +28,9 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     ###########################################################################
     #                  DP - generate consumption functions                    #
     ###########################################################################
-    c_func_fp = os.path.join(base_path, 'results', f'c function_DEBT_{ppt_bar}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v function_DEBT_{ppt_bar}.xlsx')
+    today = datetime.now().date()
+    c_func_fp = os.path.join(base_path, 'results', f'c_DEBT_{ppt_bar}_{gamma}_{today}.xlsx')
+    v_func_fp = os.path.join(base_path, 'results', f'v_DEBT_{ppt_bar}_{gamma}_{today}.xlsx')
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
@@ -67,7 +69,7 @@ def main(version, n_sim, gamma):
     income_fp = os.path.join(base_path, 'data', income_fn)
     mortal_fp = os.path.join(base_path, 'data', surviv_fn)
     loan_fp = os.path.join(base_path, 'data', loan_fn)
-    ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
+    ce_fp = os.path.join(base_path, 'results', f'ce_{datetime.now().date()}.xlsx')
 
     # read raw data
     age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
