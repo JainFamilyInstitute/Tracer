@@ -6,11 +6,12 @@ from functions import *
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
 from constants import *
+
 import multiprocessing as mp
 import itertools
 
 
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, base_path, gamma, n_sim):
+def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, base_path, n_sim, gamma):
     principal = param_pair[0]
     ppt_bar = param_pair[1]
 
@@ -51,7 +52,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
     return principal, ppt_bar, gamma, c_ce
 
-def main(version, gamma, n_sim):
+def main(version, n_sim, gamma):
     assert version == 'DEBT'
     start_time = time.time()
 
@@ -86,9 +87,12 @@ def main(version, gamma, n_sim):
     loan_params = loan_params[["New Principal", "ppt-bar"]].copy()
 
     param_pair = list(loan_params.values)
-    fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, gamma, n_sim]]
+    fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
-    search_args = list(itertools.product(param_pair, *fixed_args))
+    if isinstance(gamma,float):
+        gamma = [gamma]
+
+    search_args = list(itertools.product(param_pair, *fixed_args, gamma))
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
 
