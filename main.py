@@ -11,15 +11,18 @@ from datetime import datetime
 import multiprocessing as mp
 import itertools
 
-
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, base_path, n_sim, gamma):
-    principal = param_pair[0]
-    ppt_bar = param_pair[1]
-
+#SIDHYA CHANGE
+def run_model(TERMrho, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, base_path, n_sim, gamma):
+    #principal = param_pair[0]
+    #ppt_bar = param_pair[1]
+    TERM = int(TERMrho[0])
+    rho = TERMrho[1]
+    
     start = time.time()
 
     # adj income
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
+    #SIDHYA CHANGE
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, TERM, rho, n_sim)
 
     # get conditional survival probabilities
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
@@ -46,30 +49,32 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
 
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-
+    #SIDHYA CHANGE
     ##Expanding Factor
-    print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+    print(f'########## Term: {TERM} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
 
     #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
-    return principal, ppt_bar, gamma, c_ce
+    #SIDHYA CHANGE
+    return TERM, rho, gamma, c_ce
 
 def main(version, n_sim, gamma):
-    assert version == 'DEBT'
+    assert version == 'ISA'
     start_time = time.time()
 
     ###########################################################################
     #                      Setup - file path & raw data                       #
     ###########################################################################
     # set file path
+    #SIDHYA CHANGE
     income_fn = 'age_coefficients_and_var.xlsx'
     surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
-    loan_fn = 'Loop on Principal for Loan.xlsx'
+    isa_fn = 'Loop on term and rho.xlsx'
     base_path = os.path.dirname(__file__)
     income_fp = os.path.join(base_path, 'data', income_fn)
     mortal_fp = os.path.join(base_path, 'data', surviv_fn)
-    loan_fp = os.path.join(base_path, 'data', loan_fn)
-    ce_fp = os.path.join(base_path, 'results', f'ce_{datetime.now().date()}.xlsx')
+    isa_fp = os.path.join(base_path, 'data', isa_fn)
+    ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
     age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
@@ -84,11 +89,11 @@ def main(version, n_sim, gamma):
     # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
-
-    loan_params = pd.read_excel(loan_fp)
-    loan_params = loan_params[["New Principal", "ppt-bar"]].copy()
-
-    param_pair = list(loan_params.values)
+    #SIDHYA CHANGE
+    isa_params = pd.read_excel(isa_fp)
+    isa_params = isa_params[["Term", "1-rho"]].copy()
+    #SIDHYA CHANGE
+    param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
     if isinstance(gamma,float):
@@ -102,7 +107,7 @@ def main(version, n_sim, gamma):
     # for i in range(len(gamma_arr)):
     #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
 
-    c_ce_df = pd.DataFrame(c_ce, columns=['principal', 'ppt_bar', 'gamma', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
 
