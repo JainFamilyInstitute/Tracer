@@ -56,10 +56,11 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
 
     #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
     #SIDHYA CHANGE
+
     return term, rho, gamma, c_ce
 
 def main(version, n_sim, gamma):
-    assert version == 'ISA'
+    assert version == 'ISA_MC'
     start_time = time.time()
 
     ###########################################################################

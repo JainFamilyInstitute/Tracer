@@ -2,7 +2,7 @@
 import argparse
 from main import main
 
-VERSION = 'DEBT'
+VERSION = 'ISA_MC'
 
 #SIDHYA change
 if __name__ == "__main__":
