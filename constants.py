@@ -48,8 +48,8 @@ unempl_rate = {
 }
 
 # rho
-rho = 0.900796641891997
-TERM = 10
+#rho = 0.900796641891997
+#TERM = 10
 
 # ppt
 rate = 0.07
