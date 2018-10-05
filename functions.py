@@ -79,7 +79,15 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     bern = np.append(r, ones, axis=0)
     Y = np.multiply(inc_with_inc_risk, bern.T)
 
+    # jh4
+    discount_array = DELTA**np.arange(Y.shape[1])
+    discount_Y = np.multiply(Y, discount_array)
+    npvs = np.sum(discount_Y, axis=1)
+    allowed_rows = np.where(npvs<np.percentile(npvs,100*INCOME_NPV_CUTOFF))
+    reduced_Y = Y[allowed_rows]
+    Y = reduced_Y
     # adjust income with debt repayment
+
     D = np.zeros(Y.shape)
     D[:, 0] = INIT_DEBT
     P = np.zeros(Y.shape)
@@ -107,7 +115,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
 
-    COH = np.zeros((N_SIM, N_C))
+    COH = np.zeros((y.shape[0], N_C))
     COH[:] = np.squeeze(savings_incr)
     COH += y[None].T
 
@@ -120,8 +128,8 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((N_SIM, N_C))
-    for i in range(N_SIM):
+    v_w = np.zeros((y.shape[0], N_C))q
+    for i in range(y.shape[0]):
         v_w[i, :] = spline(COH[i, :])
 
     ev = v_w.mean(axis=0)

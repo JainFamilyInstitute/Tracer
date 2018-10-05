@@ -88,8 +88,10 @@ def main(version, n_sim, gamma):
     loan_params = pd.read_excel(loan_fp)
     loan_params = loan_params[["New Principal", "ppt-bar"]].copy()
 
+
     param_pair = list(loan_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
+
 
     if isinstance(gamma,float):
         gamma = [gamma]
@@ -97,7 +99,7 @@ def main(version, n_sim, gamma):
     search_args = list(itertools.product(param_pair, *fixed_args, gamma))
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
-
+    # one run only: c_ce = run_model(*search_args[0])
     # c_ce = np.zeros((len(gamma_arr), 2))
     # for i in range(len(gamma_arr)):
     #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])

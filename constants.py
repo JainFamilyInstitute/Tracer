@@ -20,6 +20,8 @@ INIT_WEALTH = 0
 AltDeg = 2
 run_dp = True
 
+INCOME_NPV_CUTOFF = 0.9
+
 education_level = {
     1: 'No High School',
     2: 'High School Graduates',
