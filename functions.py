@@ -49,7 +49,7 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
+def adj_income_process(income, sigma_perm, sigma_tran, term, rho, N_SIM):
     # generate random walk and normal r.v.
     np.random.seed(0)
     rn_perm = np.random.normal(MU, sigma_perm, (N_SIM, RETIRE_AGE - START_AGE + 1))
@@ -115,7 +115,8 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
 
-    COH = np.zeros((N_SIM, N_C))
+    reduced_N_SIM = y.shape[0]
+    COH = np.zeros((reduced_N_SIM, N_C))
     COH[:] = np.squeeze(savings_incr)
     COH += y[None].T
 
@@ -128,8 +129,8 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((N_SIM, N_C))
-    for i in range(N_SIM):
+    v_w = np.zeros((reduced_N_SIM, N_C))
+    for i in range(reduced_N_SIM):
         v_w[i, :] = spline(COH[i, :])
 
     ev = v_w.mean(axis=0)
