@@ -108,7 +108,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
 
     # # adjust income with ISA
     adj_Y = Y.copy()
-    adj_Y[:, :TERM] *= rho
+    adj_Y[:, :term] *= rho
 
     return adj_Y
 
