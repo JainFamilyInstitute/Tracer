@@ -29,8 +29,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran,  surv_prob, bas
     #                  DP - generate consumption functions                    #
     ###########################################################################
     today = datetime.now().date()
-    c_func_fp = os.path.join(base_path, 'results', f'c_DEBT_{ppt_bar}_{gamma}_{today}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v_DEBT_{ppt_bar}_{gamma}_{today}.xlsx')
+    c_func_fp = os.path.join(base_path, 'results', f'c_DEBT_{rho}_{gamma}_{today}.xlsx')
+    v_func_fp = os.path.join(base_path, 'results', f'v_DEBT_{rho}_{gamma}_{today}.xlsx')
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
