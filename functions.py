@@ -88,34 +88,34 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     Y = reduced_Y
     # adjust income with debt repayment
 
-    D = np.zeros(Y.shape)
-    D[:, 0] = INIT_DEBT
-    P = np.zeros(Y.shape)
+    #D = np.zeros(Y.shape)
+    #D[:, 0] = INIT_DEBT
+    #P = np.zeros(Y.shape)
 
-    for t in range(END_AGE - START_AGE):
-        cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
-        cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
-        cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
-        cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
+    #for t in range(END_AGE - START_AGE):
+        #cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
+        #cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
+        #cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
+        #cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
 
-        P[cond1, t] = P_BAR
-        P[cond2, t] = D[cond2, t]
-        P[cond3, t] = Y[cond3, t] / 2
-        P[cond4, t] = Y[cond4, t] / 2
+        #P[cond1, t] = P_BAR
+        #P[cond2, t] = D[cond2, t]
+        #P[cond3, t] = Y[cond3, t] / 2
+        #P[cond4, t] = Y[cond4, t] / 2
 
-        D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
-    adj_Y = Y - P
+        #D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
+    #adj_Y = Y - P
 
     # # adjust income with ISA
-    # adj_Y = Y
-    # adj_Y[:, :TERM] *= rho
+    adj_Y = Y.copy()
+    adj_Y[:, :TERM] *= rho
 
     return adj_Y
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
 
-    COH = np.zeros((y.shape[0], N_C))
+    COH = np.zeros((N_SIM, N_C))
     COH[:] = np.squeeze(savings_incr)
     COH += y[None].T
 
@@ -128,8 +128,8 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((y.shape[0], N_C))q
-    for i in range(y.shape[0]):
+    v_w = np.zeros((N_SIM, N_C))q
+    for i in range(N_SIM):
         v_w[i, :] = spline(COH[i, :])
 
     ev = v_w.mean(axis=0)
