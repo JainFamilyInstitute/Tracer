@@ -128,7 +128,7 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((N_SIM, N_C))q
+    v_w = np.zeros((N_SIM, N_C))
     for i in range(N_SIM):
         v_w[i, :] = spline(COH[i, :])
 
