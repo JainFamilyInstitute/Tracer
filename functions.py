@@ -49,13 +49,13 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
+def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     # generate random walk and normal r.v.
     np.random.seed(0)
-    rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - START_AGE + 1))
+    rn_perm = np.random.normal(MU, sigma_perm, (N_SIM, RETIRE_AGE - START_AGE + 1))
     rand_walk = np.cumsum(rn_perm, axis=1)
     np.random.seed(1)
-    rn_tran = np.random.normal(MU, sigma_tran, (n_sim, RETIRE_AGE - START_AGE + 1))
+    rn_tran = np.random.normal(MU, sigma_tran, (N_SIM, RETIRE_AGE - START_AGE + 1))
     inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
 
     # - retirement
@@ -72,34 +72,37 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
     # unemployment risk
     # generate bernoulli random variable
     p = 1 - unempl_rate[AltDeg]
-    r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, n_sim)).astype(float)
+    r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, N_SIM)).astype(float)
     r[r == 0] = unemp_frac[AltDeg]
-    ones = np.ones((END_AGE - RETIRE_AGE, n_sim))
+    ones = np.ones((END_AGE - RETIRE_AGE, N_SIM))
     bern = np.append(r, ones, axis=0)
     Y = np.multiply(inc_with_inc_risk, bern.T)
 
+    if (INIT_DEBT is None) and (P_BAR is None):
+        return Y
+
     # adjust income with debt repayment
-    #D = np.zeros(Y.shape)
-    #D[:, 0] = INIT_DEBT
-    #P = np.zeros(Y.shape)
+    D = np.zeros(Y.shape)
+    D[:, 0] = INIT_DEBT
+    P = np.zeros(Y.shape)
 
-    #for t in range(END_AGE - START_AGE):
-        #cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
-        #cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
+    for t in range(END_AGE - START_AGE):
+        cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
+        cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
+        cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
+        cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
 
-        #P[cond1, t] = P_BAR
-        #P[cond2, t] = D[cond2, t]
-        #P[cond3, t] = Y[cond3, t] / 2
-        #P[cond4, t] = Y[cond4, t] / 2
+        P[cond1, t] = P_BAR
+        P[cond2, t] = D[cond2, t]
+        P[cond3, t] = Y[cond3, t] / 2
+        P[cond4, t] = Y[cond4, t] / 2
 
-        #D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
-    #adj_Y = Y - P
-#SIDHYA CHANGE
-    # adjust income with ISA
-    adj_Y = Y.copy()
-    adj_Y[:, :term] *= rho
+        D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
+    adj_Y = Y - P
+
+    # # adjust income with ISA
+    # adj_Y = Y
+    # adj_Y[:, :TERM] *= rho
 
     return adj_Y
 
