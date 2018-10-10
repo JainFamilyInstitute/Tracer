@@ -30,8 +30,8 @@ def generate_consumption_process(inc, c_func_df, N_SIM):
     #               COH_t+1 = (1 + R)*(COH_t - C_t) + Y_t+1                   #
     #                wealth = (1 + R)*(COH_t - C_t)                           #
     ###########################################################################
-    cash_on_hand = np.zeros((N_SIM, YEARS))
-    c = np.zeros((N_SIM, YEARS))
+    cash_on_hand = np.zeros_like(inc)
+    c = np.zeros_like(inc)
 
     cash_on_hand[:, 0] = INIT_WEALTH + inc[:, 0]   # cash on hand at age 22
 
