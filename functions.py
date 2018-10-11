@@ -62,13 +62,6 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
     ret_income_vec = ret_frac[AltDeg] * np.tile(inc_with_inc_risk[:, -1], (END_AGE - RETIRE_AGE, 1)).T
     inc_with_inc_risk = np.append(inc_with_inc_risk, ret_income_vec, axis=1)
 
-    # # unemployment risk
-    # Y_list = []
-    # for unemp_flag in [True, False]:
-    #     Y = inc_with_inc_risk * unemp_frac[AltDeg] if unemp_flag else inc_with_inc_risk
-    #     Y_list.append(Y)
-    # Y = unempl_rate[AltDeg] * Y_list[0] + (1 - unempl_rate[AltDeg]) * Y_list[1]      # include income risks and unemployment risk
-
     # unemployment risk
     # generate bernoulli random variable
     p = 1 - unempl_rate[AltDeg]
@@ -78,25 +71,6 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
     bern = np.append(r, ones, axis=0)
     Y = np.multiply(inc_with_inc_risk, bern.T)
 
-    # adjust income with debt repayment
-    #D = np.zeros(Y.shape)
-    #D[:, 0] = INIT_DEBT
-    #P = np.zeros(Y.shape)
-
-    #for t in range(END_AGE - START_AGE):
-        #cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
-        #cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
-
-        #P[cond1, t] = P_BAR
-        #P[cond2, t] = D[cond2, t]
-        #P[cond3, t] = Y[cond3, t] / 2
-        #P[cond4, t] = Y[cond4, t] / 2
-
-        #D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
-    #adj_Y = Y - P
-#SIDHYA CHANGE
     # adjust income with ISA
     adj_Y = Y.copy()
     adj_Y[:, :term] *= rho

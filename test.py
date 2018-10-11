@@ -7,7 +7,7 @@ from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
 from constants import *
 from datetime import datetime
-
+import glob
 import multiprocessing as mp
 import itertools
 
@@ -30,50 +30,44 @@ sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[Alt
 sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
 
 
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
-    term = int(param_pair[0])
-    rho = param_pair[1]
+def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
+    term = 10
 
     start = time.time()
 
-    # adj income
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
-
-    # get conditional survival probabilities
-    cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
-    cond_prob = cond_prob.values
-
-    ###########################################################################
-    #                    DP - read consumption functions                      #
-    ###########################################################################
-    date = "2018-8-24"
-    c_func_fp = os.path.join(base_path, 'data', f'c_ISA_10_0.8514042436476386_2.0_2018-08-24.xlsx')
-    c_func_df = pd.read_excel(c_func_fp)
+    cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_ISA_*'))
 
     op = []
-    for dec_l, dec_r in zip(np.arange(0, 1, 0.1), np.arange(0, 1, 0.1) + 0.1):
-        discount_array = DELTA**np.arange(adj_income.shape[1])
-        discount_Y = np.multiply(adj_income, discount_array)
-        npvs = np.sum(discount_Y, axis=1)
-        allowed_rows = np.where(np.logical_and(npvs > np.percentile(npvs, 100*dec_l), npvs < np.percentile(npvs, 100*dec_r)))
-        cur_decile = adj_income[allowed_rows]
-        ###########################################################################
-        #        CE - calculate consumption process & certainty equivalent        #
-        ###########################################################################
-        c_proc, _ = generate_consumption_process(cur_decile, c_func_df, cur_decile.shape[0])
-        prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-        c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-        op.append(c_ce)
-    df = pd.DataFrame(op)
-    df.to_csv(os.path.join(base_path, 'results', 'ces.csv'))
+    col_names = []
+    for fp in cfunc_fps:
+        c_func_df = pd.read_excel(fp)
+        rho = float(fp.split('/')[-1].split('_')[3])
+        gamma = float(fp.split('/')[-1].split('_')[4])
+        col_names.append(str(rho)+'_'+str(gamma))
 
-    print(
-        f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
-    print(f"------ {time.time() - start} seconds ------")
+        adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
 
-    return term, rho, gamma, c_ce
+        single_op = []
+        for dec_l, dec_r in zip(np.arange(0, 1, 0.1), np.arange(0, 1, 0.1) + 0.1):
+            discount_array = DELTA**np.arange(adj_income.shape[1])
+            discount_Y = np.multiply(adj_income, discount_array)
+            npvs = np.sum(discount_Y, axis=1)
+            allowed_rows = np.where(np.logical_and(npvs > np.percentile(npvs, 100*dec_l), npvs < np.percentile(npvs, 100*dec_r)))
+            cur_decile = adj_income[allowed_rows]
+            ###########################################################################
+            #        CE - calculate consumption process & certainty equivalent        #
+            ###########################################################################
+            c_proc, _ = generate_consumption_process(cur_decile, c_func_df, cur_decile.shape[0])
+            prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+            c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
+            single_op.append(c_ce)
+
+        print(
+            f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+        print(f"------ {time.time() - start} seconds ------")
+        op.append(single_op)
+    df = pd.DataFrame(op, index=col_names)
+    df.to_csv(os.path.join(base_path, 'results', 'CEs.csv'))
 
 
-
-param_pair = [10, 0.8514042436476386]
-run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000, 2.0)
+run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
