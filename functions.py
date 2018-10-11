@@ -62,13 +62,6 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     ret_income_vec = ret_frac[AltDeg] * np.tile(inc_with_inc_risk[:, -1], (END_AGE - RETIRE_AGE, 1)).T
     inc_with_inc_risk = np.append(inc_with_inc_risk, ret_income_vec, axis=1)
 
-    # # unemployment risk
-    # Y_list = []
-    # for unemp_flag in [True, False]:
-    #     Y = inc_with_inc_risk * unemp_frac[AltDeg] if unemp_flag else inc_with_inc_risk
-    #     Y_list.append(Y)
-    # Y = unempl_rate[AltDeg] * Y_list[0] + (1 - unempl_rate[AltDeg]) * Y_list[1]      # include income risks and unemployment risk
-
     # unemployment risk
     # generate bernoulli random variable
     p = 1 - unempl_rate[AltDeg]
