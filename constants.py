@@ -1,7 +1,7 @@
 ###########################################################################
 #                            Set Constants                                #
 ###########################################################################
-START_AGE = 22            #
+START_AGE = 18            #
 END_AGE = 100             #
 RETIRE_AGE = 65           # retirement age
 N_W = 501
@@ -17,7 +17,7 @@ MU = 0                    # expectation of income shocks
 # N_SIM = 10000            # number of draws
 INIT_WEALTH = 0
 
-AltDeg = 4
+AltDeg = 2
 run_dp = True
 
 education_level = {
