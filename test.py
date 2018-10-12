@@ -67,7 +67,7 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
         print(f"------ {time.time() - start} seconds ------")
         op.append(single_op)
     df = pd.DataFrame(op, index=col_names)
-    df.to_csv(os.path.join(base_path, 'results', 'CEs.csv'))
+    df.to_csv(os.path.join(base_path, 'results', 'ISA_CEs.csv'))
 
 
-run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
+run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
