@@ -77,51 +77,51 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 # run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
 
 
-# cg
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
-    principal = param_pair[0]
-    ppt_bar = param_pair[1]
-
-    start = time.time()
-
-    # adj income
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
-
-    ###########################################################################
-    #                    DP - read consumption functions                      #
-    ###########################################################################
-    cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Coll*'))
-
-    op = []
-    for fp in cfunc_fps:
-        c_func_df = pd.read_excel(fp)
-        gamma = float(fp.split('.')[-3][-1])
-
-        single_op = []
-        for dec_l, dec_r in zip(np.arange(0, 1, 0.1), np.arange(0, 1, 0.1) + 0.1):
-            discount_array = DELTA**np.arange(adj_income.shape[1])
-            discount_Y = np.multiply(adj_income, discount_array)
-            npvs = np.sum(discount_Y, axis=1)
-            allowed_rows = np.where(np.logical_and(npvs >= np.percentile(npvs, 100*dec_l), npvs < np.percentile(npvs, 100*dec_r)))
-            cur_decile = adj_income[allowed_rows]
-            ###########################################################################
-            #        CE - calculate consumption process & certainty equivalent        #
-            ###########################################################################
-            c_proc, _ = generate_consumption_process(cur_decile, c_func_df, cur_decile.shape[0])
-            prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-            c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-            single_op.append(c_ce)
-
-        print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
-        print(f"------ {time.time() - start} seconds ------")
-        op.append(single_op)
-    df = pd.DataFrame(op)
-    df.to_csv(os.path.join(base_path, 'results', 'cg_CEs.csv'))
-
-
-
-param_pair = [None, None]
-run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
+# # cg
+# def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
+#     principal = param_pair[0]
+#     ppt_bar = param_pair[1]
+#
+#     start = time.time()
+#
+#     # adj income
+#     adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
+#
+#     ###########################################################################
+#     #                    DP - read consumption functions                      #
+#     ###########################################################################
+#     cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Coll*'))
+#
+#     op = []
+#     for fp in cfunc_fps:
+#         c_func_df = pd.read_excel(fp)
+#         gamma = float(fp.split('.')[-3][-1])
+#
+#         single_op = []
+#         for dec_l, dec_r in zip(np.arange(0, 1, 0.1), np.arange(0, 1, 0.1) + 0.1):
+#             discount_array = DELTA**np.arange(adj_income.shape[1])
+#             discount_Y = np.multiply(adj_income, discount_array)
+#             npvs = np.sum(discount_Y, axis=1)
+#             allowed_rows = np.where(np.logical_and(npvs >= np.percentile(npvs, 100*dec_l), npvs < np.percentile(npvs, 100*dec_r)))
+#             cur_decile = adj_income[allowed_rows]
+#             ###########################################################################
+#             #        CE - calculate consumption process & certainty equivalent        #
+#             ###########################################################################
+#             c_proc, _ = generate_consumption_process(cur_decile, c_func_df, cur_decile.shape[0])
+#             prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+#             c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
+#             single_op.append(c_ce)
+#
+#         print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+#         print(f"------ {time.time() - start} seconds ------")
+#         op.append(single_op)
+#     df = pd.DataFrame(op)
+#     df.to_csv(os.path.join(base_path, 'results', 'cg_CEs.csv'))
+#
+#
+#
+# param_pair = [None, None]
+# run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
 
 
 # # debt
@@ -192,51 +192,29 @@ run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_pat
 
 
 
-# # graph
-# # cg
-# def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
-#     principal = param_pair[0]
-#     ppt_bar = param_pair[1]
-#
-#     start = time.time()
-#
-#     # adj income
-#     adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
-#
-#     ###########################################################################
-#     #                    DP - read consumption functions                      #
-#     ###########################################################################
-#     # cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Coll*'))
-#     cfunc_fps = ['./data/c_CollGradNoBorrowing_Gamma2.0.xlsx']
-#
-#     op = []
-#     for fp in cfunc_fps:
-#         c_func_df = pd.read_excel(fp)
-#         gamma = float(fp.split('.')[-3][-1])
-#
-#         c_proc, _ = generate_consumption_process(adj_income, c_func_df, adj_income.shape[0])
-#         # single_op = []
-#         # for dec_l, dec_r in zip(np.arange(0, 1, 0.1), np.arange(0, 1, 0.1) + 0.1):
-#         #     discount_array = DELTA**np.arange(adj_income.shape[1])
-#         #     discount_Y = np.multiply(adj_income, discount_array)
-#         #     npvs = np.sum(discount_Y, axis=1)
-#         #     allowed_rows = np.where(np.logical_and(npvs >= np.percentile(npvs, 100*dec_l), npvs < np.percentile(npvs, 100*dec_r)))
-#         #     cur_decile = adj_income[allowed_rows]
-#         #     ###########################################################################
-#         #     #        CE - calculate consumption process & certainty equivalent        #
-#         #     ###########################################################################
-#         #     c_proc, _ = generate_consumption_process(cur_decile, c_func_df, cur_decile.shape[0])
-#         #     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-#         #     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-#         #     single_op.append(c_ce)
-#
-#         print(f'########## Gamma: {ppt_bar} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
-#         print(f"------ {time.time() - start} seconds ------")
-#         # op.append(single_op)
-#     # df = pd.DataFrame(op)
-#     # df.to_csv(os.path.join(base_path, 'results', 'cg_CEs.csv'))
-#
-#
-#
-# param_pair = [None, None]
-# run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
+# graph
+# cg
+def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
+    principal = param_pair[0]
+    ppt_bar = param_pair[1]
+
+    start = time.time()
+
+    # adj income
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
+
+    ###########################################################################
+    #                    DP - read consumption functions                      #
+    ###########################################################################
+    # cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Coll*'))
+    cfunc_fps = ['./data/c_CollGradNoBorrowing_Gamma2.0.xlsx']
+
+    op = []
+    for fp in cfunc_fps:
+        c_func_df = pd.read_excel(fp)
+        gamma = float(fp.split('.')[-3][-1])
+
+        c_proc, _ = generate_consumption_process(adj_income, c_func_df, adj_income.shape[0])
+
+param_pair = [None, None]
+run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
