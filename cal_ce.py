@@ -72,3 +72,21 @@ def cal_certainty_equi(prob, c, GAMMA):
     total_w_ce = prob[:44].sum() * c_ce   # 42.7
 
     return c_ce, total_w_ce
+
+
+def cal_ce_agent(prob, c, GAMMA):
+    # discount factor
+    YEARS = END_AGE - START_AGE + 1
+    delta = np.ones((YEARS, 1)) * DELTA
+    delta[0] = 1
+    delta = np.cumprod(delta)
+
+    util_c = np.apply_along_axis(utility, 1, c, GAMMA)
+    simu_util = np.sum(np.multiply(util_c[:, :44], (delta * prob)[:44]), axis=1)
+
+    if GAMMA == 1:
+        ce = np.exp(simu_util / np.sum((delta * prob)[:44]))
+    else:
+        ce = ((1 - GAMMA) * simu_util / np.sum((delta * prob)[:44])) ** (1 / (1 - GAMMA))
+
+    return ce
