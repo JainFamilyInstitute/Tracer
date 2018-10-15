@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.rc('font',family='Times New Roman')
 
+
 # policy functions: C_t(W_t)
 def c_func(c_df, w, age):
     """ Given the consumption functions and wealth at certain age, return the corresponding consumption """
@@ -43,15 +44,15 @@ def generate_consumption_process(inc, c_func_df, N_SIM):
         cash_on_hand[:, t+1] = (1 + R) * (cash_on_hand[:, t] - c[:, t]) + inc[:, t+1]  # 1-78
     c[:, -1] = c_func(c_func_df, cash_on_hand[:, -1], END_AGE)   # consumption at age 100
 
-    # GRAPH - Average Cash-on-hand & consumption over lifetime
-    plt.plot(cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
-    plt.plot(c.mean(axis=0), linestyle='-.', color='k', label='consumption')
-    plt.title(f'Average Cash-on-hand and Consumption over the life cycle', fontname='Times New Roman')
-    plt.xlabel('Age', fontname='Times New Roman')
-    plt.ylabel('Dollar', fontname='Times New Roman')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # # GRAPH - Average Cash-on-hand & consumption over lifetime
+    # plt.plot(cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
+    # plt.plot(c.mean(axis=0), linestyle='-.', color='k', label='consumption')
+    # plt.title(f'Average Cash-on-hand and Consumption over the life cycle', fontname='Times New Roman')
+    # plt.xlabel('Age', fontname='Times New Roman')
+    # plt.ylabel('Dollar', fontname='Times New Roman')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
 
     return c, inc
 
@@ -74,3 +75,21 @@ def cal_certainty_equi(prob, c, GAMMA):
     total_w_ce = prob[:44].sum() * c_ce   # 42.7
 
     return c_ce, total_w_ce
+
+
+def cal_ce_agent(prob, c, GAMMA):
+    # discount factor
+    YEARS = END_AGE - START_AGE + 1
+    delta = np.ones((YEARS, 1)) * DELTA
+    delta[0] = 1
+    delta = np.cumprod(delta)
+
+    util_c = np.apply_along_axis(utility, 1, c, GAMMA)
+    simu_util = np.sum(np.multiply(util_c[:, :44], (delta * prob)[:44]), axis=1)
+
+    if GAMMA == 1:
+        ce = np.exp(simu_util / np.sum((delta * prob)[:44]))
+    else:
+        ce = ((1 - GAMMA) * simu_util / np.sum((delta * prob)[:44])) ** (1 / (1 - GAMMA))
+
+    return ce
