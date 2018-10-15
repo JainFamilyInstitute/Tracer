@@ -6,7 +6,7 @@ from functions import utility
 from constants import *
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-mpl.rc('font',family='Times New Roman')
+# mpl.rc('font',family='Times New Roman')
 
 # policy functions: C_t(W_t)
 def c_func(c_df, w, age):
@@ -44,11 +44,12 @@ def generate_consumption_process(inc, c_func_df, N_SIM):
     c[:, -1] = c_func(c_func_df, cash_on_hand[:, -1], END_AGE)   # consumption at age 100
 
     # GRAPH - Average Cash-on-hand & consumption over lifetime
-    plt.plot(cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
-    plt.plot(c.mean(axis=0), linestyle='-.', color='k', label='consumption')
-    plt.title(f'Average Cash-on-hand and Consumption over the life cycle', fontname='Times New Roman')
-    plt.xlabel('Age', fontname='Times New Roman')
-    plt.ylabel('Dollar', fontname='Times New Roman')
+    ages = [str(x + START_AGE) for x in range(END_AGE - START_AGE + 1)]
+    plt.plot(ages, cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
+    plt.plot(ages, c.mean(axis=0), linestyle='-.', color='k', label='consumption')
+    plt.title(f'Average Cash-on-hand and Consumption over the life cycle')
+    plt.xlabel('Age')
+    plt.ylabel('Dollar')
     plt.legend()
     plt.grid()
     plt.show()

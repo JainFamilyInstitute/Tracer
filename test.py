@@ -185,15 +185,8 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 # run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
 
 
-# plan
-# 1. hsg - done
-# 2. cg - done
-# 3. debt
-
-
 
 # graph
-# cg
 def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
     principal = param_pair[0]
     ppt_bar = param_pair[1]
@@ -206,15 +199,12 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     #                    DP - read consumption functions                      #
     ###########################################################################
-    # cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Coll*'))
     cfunc_fps = ['./data/c_CollGradNoBorrowing_Gamma2.0.xlsx']
 
-    op = []
     for fp in cfunc_fps:
         c_func_df = pd.read_excel(fp)
-        gamma = float(fp.split('.')[-3][-1])
-
         c_proc, _ = generate_consumption_process(adj_income, c_func_df, adj_income.shape[0])
+
 
 param_pair = [None, None]
 run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 100000)
