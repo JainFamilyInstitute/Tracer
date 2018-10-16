@@ -89,4 +89,4 @@ def cal_ce_agent(prob, c, GAMMA):
     else:
         ce = ((1 - GAMMA) * simu_util / np.sum((delta * prob)[:44])) ** (1 / (1 - GAMMA))
 
-    return ce
+    return ce, simu_util
