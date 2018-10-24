@@ -49,59 +49,55 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
+def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, PL, N_SIM):
     # generate random walk and normal r.v.
     np.random.seed(0)
-    rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - START_AGE + 1))
+    rn_perm = np.random.normal(MU, sigma_perm, (N_SIM, RETIRE_AGE - START_AGE + 1))
     rand_walk = np.cumsum(rn_perm, axis=1)
     np.random.seed(1)
-    rn_tran = np.random.normal(MU, sigma_tran, (n_sim, RETIRE_AGE - START_AGE + 1))
+    rn_tran = np.random.normal(MU, sigma_tran, (N_SIM, RETIRE_AGE - START_AGE + 1))
     inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
 
     # - retirement
     ret_income_vec = ret_frac[AltDeg] * np.tile(inc_with_inc_risk[:, -1], (END_AGE - RETIRE_AGE, 1)).T
     inc_with_inc_risk = np.append(inc_with_inc_risk, ret_income_vec, axis=1)
 
-    # # unemployment risk
-    # Y_list = []
-    # for unemp_flag in [True, False]:
-    #     Y = inc_with_inc_risk * unemp_frac[AltDeg] if unemp_flag else inc_with_inc_risk
-    #     Y_list.append(Y)
-    # Y = unempl_rate[AltDeg] * Y_list[0] + (1 - unempl_rate[AltDeg]) * Y_list[1]      # include income risks and unemployment risk
-
     # unemployment risk
     # generate bernoulli random variable
     p = 1 - unempl_rate[AltDeg]
-    r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, n_sim)).astype(float)
+    r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, N_SIM)).astype(float)
     r[r == 0] = unemp_frac[AltDeg]
-    ones = np.ones((END_AGE - RETIRE_AGE, n_sim))
+    ones = np.ones((END_AGE - RETIRE_AGE, N_SIM))
     bern = np.append(r, ones, axis=0)
     Y = np.multiply(inc_with_inc_risk, bern.T)
 
     # adjust income with debt repayment
-    #D = np.zeros(Y.shape)
-    #D[:, 0] = INIT_DEBT
-    #P = np.zeros(Y.shape)
+    D = np.zeros(Y.shape)
+    D[:, 0] = INIT_DEBT
+    # P = np.zeros(Y.shape)
 
-    #for t in range(END_AGE - START_AGE):
-        #cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
-        #cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
-        #cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
+    P = (Y - PL)
+    P = np.where(P < 0, 0, P)
+    P = P * 0.125
+    P[:, 20:] = 0
 
-        #P[cond1, t] = P_BAR
-        #P[cond2, t] = D[cond2, t]
-        #P[cond3, t] = Y[cond3, t] / 2
-        #P[cond4, t] = Y[cond4, t] / 2
+    for t in range(END_AGE - START_AGE):
+        if t < 20:
+            cond1 = P[:, t] >= D[:, t]*rate
+            D[cond1, t + 1] = D[cond1, t] * (1 + rate) - P[cond1, t]
+            cond2 = P[:, t] < D[:, t]*rate
+            D[cond2, t + 1] = D[cond2, t] + (D[cond2, t]*rate - P[cond2, t]) / 2
+        else:
+            D[:, t] = 0
 
-        #D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
-    #adj_Y = Y - P
-#SIDHYA CHANGE
-    # adjust income with ISA
-    adj_Y = Y.copy()
-    adj_Y[:, :term] *= rho
+    for t in range(END_AGE - START_AGE):
+        if t < 20:
+            cond = D[:, t] < 0
+            P[cond, t-1] = D[cond, t-1]
+            D[cond, t] = 0
 
-    return adj_Y
+    adj_Y = Y - P
+    return adj_Y, P, D
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
@@ -114,10 +110,6 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     COH[COH < grid_w[0]] = grid_w[0]
 
     spline = CubicSpline(grid_w, v, bc_type='natural')  # minimum curvature in both ends
-
-    # p = mp.Pool(processes=mp.cpu_count())
-    # v_w = p.apply(spline, args=(COH,))
-    # p.close()
 
     v_w = np.zeros((N_SIM, N_C))
     for i in range(N_SIM):
