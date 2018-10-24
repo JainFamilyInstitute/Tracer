@@ -21,7 +21,20 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
 
     # adj income
     #SIDHYA CHANGE
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+    adj_income, payment, income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+
+    adj_inc_proc = pd.DataFrame(adj_income)
+    adj_inc_fp = os.path.join(base_path, 'results', 'adj_inc_proc.csv')
+    adj_inc_proc.to_csv(adj_inc_fp)
+
+    pmt_proc = pd.DataFrame(payment)
+    pmt_fp = os.path.join(base_path, 'results', 'pmt_proc.csv')
+    pmt_proc.to_csv(pmt_fp)
+
+    # output income process
+    inc_proc = pd.DataFrame(income)
+    inc_fp = os.path.join(base_path, 'results', 'inc_proc.csv')
+    inc_proc.to_csv(inc_fp)
 
     # get conditional survival probabilities
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
