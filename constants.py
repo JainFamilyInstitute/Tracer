@@ -52,10 +52,7 @@ unempl_rate = {
 #rho = 0.900796641891997
 #TERM = 10
 
-# ppt
-#rate = 0.07
-
-#expanding factor
+# expanding factor
 gamma_exp_frac = {
     1: 3,
     2: 3,

@@ -11,10 +11,9 @@ from datetime import datetime
 import multiprocessing as mp
 import itertools
 
+
 #SIDHYA CHANGE
 def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
-    #principal = param_pair[0]
-    #ppt_bar = param_pair[1]
     term = int(param_pair[0])
     rho = param_pair[1]
     
@@ -43,7 +42,6 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
-    #adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran)
     c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
 
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
@@ -53,11 +51,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ##Expanding Factor
     print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
-
-    #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
-    #SIDHYA CHANGE
-
     return term, rho, gamma, c_ce
+
 
 def main(version, n_sim, gamma):
     assert version == 'ISA_MC'
@@ -66,8 +61,6 @@ def main(version, n_sim, gamma):
     ###########################################################################
     #                      Setup - file path & raw data                       #
     ###########################################################################
-    # set file path
-    #SIDHYA CHANGE
     income_fn = 'age_coefficients_and_var.xlsx'
     surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
     isa_fn = 'Loop on term and rho.xlsx'
@@ -85,7 +78,6 @@ def main(version, n_sim, gamma):
     #              Setup - income process & std & survival prob               #
     ###########################################################################
     income_bf_ret = cal_income(age_coeff)
-    # income_ret = income_bf_ret[-1]
 
     # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
@@ -97,20 +89,15 @@ def main(version, n_sim, gamma):
     param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
-    if isinstance(gamma,float):
+    if isinstance(gamma, float):
         gamma = [gamma]
 
     search_args = list(itertools.product(param_pair, *fixed_args, gamma))
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
 
-    # c_ce = np.zeros((len(gamma_arr), 2))
-    # for i in range(len(gamma_arr)):
-    #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
-
     c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
-
 
     # Params check
     print("--- %s seconds ---" % (time.time() - start_time))

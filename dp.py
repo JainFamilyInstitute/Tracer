@@ -14,7 +14,6 @@ def dp_solver(Y, prob, GAMMA, N_SIM):
 
     # construct grids
     even_grid = np.linspace(0, 1, N_W)
-    #grid_w = LOWER_BOUND_W + (UPPER_BOUND_W - LOWER_BOUND_W) * even_grid**EXPAND_FAC
     grid_w = LOWER_BOUND_W + (UPPER_BOUND_W - LOWER_BOUND_W) * even_grid**gamma_exp_frac[GAMMA]
 
     # initialize arrays for value function and consumption
