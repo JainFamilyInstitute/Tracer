@@ -81,14 +81,12 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
     i_matrix = np.tile(np.array([(1+0.07)**t for t in range(1, 80)]), (n_sim, 1))
     real_cap = i_matrix * REAL_CAP_MTPLR * BORROWING_AMT / TERM_LEN
     P = np.zeros_like(Y)
-    P_cumsum = np.zeros_like(Y)
 
     # t = 0
     cond_zero_pmt = Y[:, 0] < inc_threshold
     P[cond_zero_pmt, 0] = 0
     cond_nonzero_pmt = np.logical_not(cond_zero_pmt)
     P[cond_nonzero_pmt, 0] = np.minimum(Y[cond_nonzero_pmt, 0] * INC_SHARE, real_cap[cond_nonzero_pmt, 0])
-    P_cumsum[:, 0] = P[:, 0]
 
     # P[:, 0] = np.where(cond_zero_pmt, 0, )
 
@@ -101,10 +99,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
         P[cond_zero_pmt, t] = 0
 
         cond_nonzero_pmt = np.logical_not(cond_zero_pmt)
-        P[cond_nonzero_pmt, t] = np.minimum(Y[cond_nonzero_pmt, t] * INC_SHARE,
-                                            real_cap[cond_nonzero_pmt, t] - P_cumsum[cond_nonzero_pmt, t-1])
-
-        P_cumsum[:, t] = P_cumsum[:, t-1] + P[:, t]
+        P[cond_nonzero_pmt, t] = np.minimum(Y[cond_nonzero_pmt, t] * INC_SHARE, real_cap[cond_nonzero_pmt, t])
 
     adj_Y = Y - P
     return adj_Y, P, Y
