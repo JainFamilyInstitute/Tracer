@@ -20,9 +20,8 @@ sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[Alt
 sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
 
 INIT_DEBT = 33942.72008
-PL = 1.5 * 10830
 
-adj_income, payment, debt = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, INIT_DEBT, PL, 10000)
+adj_income, payment, debt = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, INIT_DEBT, 10000)
 
 # inc_proc = pd.DataFrame(adj_income)
 # inc_fp = os.path.join(base_path, 'results', 'inc_proc_cg.csv')

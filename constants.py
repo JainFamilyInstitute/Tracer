@@ -66,3 +66,6 @@ gamma_exp_frac = {
     7: 5,
     8: 5,
 }
+
+# poverty level
+PL = 1.5 * 10830

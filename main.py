@@ -11,18 +11,15 @@ from datetime import datetime
 import multiprocessing as mp
 import itertools
 
+
 #SIDHYA CHANGE
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
-    #principal = param_pair[0]
-    #ppt_bar = param_pair[1]
-    term = int(param_pair[0])
-    rho = param_pair[1]
+def run_model(params, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
+    principal = params
     
     start = time.time()
 
     # adj income
-    #SIDHYA CHANGE
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, n_sim)
 
     # get conditional survival probabilities
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
@@ -32,8 +29,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     #                  DP - generate consumption functions                    #
     ###########################################################################
     today = datetime.now().date()
-    c_func_fp = os.path.join(base_path, 'results', f'c_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
+    c_func_fp = os.path.join(base_path, 'results', f'c_IDR_{principal}_{gamma}_{today}.xlsx')
+    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{principal}_{gamma}_{today}.xlsx')
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
@@ -43,23 +40,20 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
-    #adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran)
     c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
 
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
 
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-    #SIDHYA CHANGE
-    ##Expanding Factor
-    print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+
+    print(f'########## Principal: {principal} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
 
-    #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
-    #SIDHYA CHANGE
-    return term, rho, gamma, c_ce
+    return principal, gamma, c_ce
+
 
 def main(version, n_sim, gamma):
-    assert version == 'ISA'
+    assert version == 'IDR'
     start_time = time.time()
 
     ###########################################################################
@@ -84,30 +78,25 @@ def main(version, n_sim, gamma):
     #              Setup - income process & std & survival prob               #
     ###########################################################################
     income_bf_ret = cal_income(age_coeff)
-    # income_ret = income_bf_ret[-1]
 
     # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
-    #SIDHYA CHANGE
+
     isa_params = pd.read_excel(isa_fp)
-    isa_params = isa_params[["Term", "1-rho"]].copy()
-    #SIDHYA CHANGE
-    param_pair = list(isa_params.values)
+    isa_params = isa_params["Principal"].copy()
+
+    params = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
     if isinstance(gamma,float):
         gamma = [gamma]
 
-    search_args = list(itertools.product(param_pair, *fixed_args, gamma))
+    search_args = list(itertools.product(params, *fixed_args, gamma))
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
 
-    # c_ce = np.zeros((len(gamma_arr), 2))
-    # for i in range(len(gamma_arr)):
-    #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
-
-    c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'gamma', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['Principal', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
 

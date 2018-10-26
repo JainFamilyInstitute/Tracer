@@ -49,7 +49,7 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, PL, N_SIM):
+def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, N_SIM):
     # generate random walk and normal r.v.
     np.random.seed(0)
     rn_perm = np.random.normal(MU, sigma_perm, (N_SIM, RETIRE_AGE - START_AGE + 1))
@@ -74,11 +74,10 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, PL, N_SIM):
     # adjust income with debt repayment
     D = np.zeros(Y.shape)
     D[:, 0] = INIT_DEBT
-    # P = np.zeros(Y.shape)
 
     P = (Y - PL)
     P = np.where(P < 0, 0, P)
-    P = P * 0.125
+    P = P * 0.15   # income share percentage !!!
     P[:, 20:] = 0
 
     for t in range(END_AGE - START_AGE):
@@ -97,7 +96,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, PL, N_SIM):
             D[cond, t] = 0
 
     adj_Y = Y - P
-    return adj_Y, P, D
+    return adj_Y
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
