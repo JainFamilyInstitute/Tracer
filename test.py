@@ -37,5 +37,10 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 param_pair = [0, 0]
 n_sim = 10000
 gamma = 2.0
+
+# step 1
+run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma)
+
+# step 2
 _, _, _, ce = run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma)
 print(ce)

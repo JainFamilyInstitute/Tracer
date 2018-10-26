@@ -23,48 +23,48 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     #SIDHYA CHANGE
     adj_income, payment, income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
 
-    adj_inc_proc = pd.DataFrame(adj_income)
-    adj_inc_fp = os.path.join(base_path, 'results', 'adj_inc_proc.csv')
-    adj_inc_proc.to_csv(adj_inc_fp)
-
-    pmt_proc = pd.DataFrame(payment)
-    pmt_fp = os.path.join(base_path, 'results', 'pmt_proc.csv')
-    pmt_proc.to_csv(pmt_fp)
+    # adj_inc_proc = pd.DataFrame(adj_income)
+    # adj_inc_fp = os.path.join(base_path, 'results', 'adj_inc_ISA_Purdue.csv')
+    # adj_inc_proc.to_csv(adj_inc_fp)
+    #
+    # pmt_proc = pd.DataFrame(payment)
+    # pmt_fp = os.path.join(base_path, 'results', 'pmt_ISA_Purdue.csv')
+    # pmt_proc.to_csv(pmt_fp)
 
     # output income process
     inc_proc = pd.DataFrame(income)
-    inc_fp = os.path.join(base_path, 'results', 'inc_proc.csv')
+    inc_fp = os.path.join(base_path, 'results', 'inc_ISA_Purdue.csv')
     inc_proc.to_csv(inc_fp)
 
-    # get conditional survival probabilities
-    cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
-    cond_prob = cond_prob.values
-
-    ###########################################################################
-    #                  DP - generate consumption functions                    #
-    ###########################################################################
-    today = datetime.now().date()
-    c_func_fp = os.path.join(base_path, 'results', f'c_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
-    # shortcut:
-    # c_func_df = pd.read_excel(c_func_fp)
-    # v_func_df = pd.read_excel(v_func_fp)
-    c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
-    c_func_df.to_excel(c_func_fp)
-    v_func_df.to_excel(v_func_fp)
-    ###########################################################################
-    #        CE - calculate consumption process & certainty equivalent        #
-    ###########################################################################
-    c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
-
-    prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-
-    c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-    #SIDHYA CHANGE
-    ##Expanding Factor
-    print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
-    print(f"------ {time.time() - start} seconds ------")
-    return term, rho, gamma, c_ce
+    # # get conditional survival probabilities
+    # cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
+    # cond_prob = cond_prob.values
+    #
+    # ###########################################################################
+    # #                  DP - generate consumption functions                    #
+    # ###########################################################################
+    # today = datetime.now().date()
+    # c_func_fp = os.path.join(base_path, 'results', f'c_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
+    # v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
+    # # shortcut:
+    # # c_func_df = pd.read_excel(c_func_fp)
+    # # v_func_df = pd.read_excel(v_func_fp)
+    # c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
+    # c_func_df.to_excel(c_func_fp)
+    # v_func_df.to_excel(v_func_fp)
+    # ###########################################################################
+    # #        CE - calculate consumption process & certainty equivalent        #
+    # ###########################################################################
+    # c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
+    #
+    # prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+    #
+    # c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
+    # #SIDHYA CHANGE
+    # ##Expanding Factor
+    # print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+    # print(f"------ {time.time() - start} seconds ------")
+    # return term, rho, gamma, c_ce
 
 
 def main(version, n_sim, gamma):
