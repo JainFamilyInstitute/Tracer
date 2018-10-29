@@ -69,8 +69,10 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 
 gamma_arr = [2] # np.arange(1, 5, 1)
 
-with mp.Pool(processes=mp.cpu_count()) as p:
-    c_ce = p.starmap(run_model, gamma_arr[None].T)
+# with mp.Pool(processes=mp.cpu_count()) as p:
+#    c_ce = p.starmap(run_model, gamma_arr[None].T)
+
+c_ce = run_model(2)
 
 c_ce_df = pd.DataFrame(c_ce, columns=['Gamma', 'Consumption CE'])
 c_ce_df.to_excel(ce_fp)
