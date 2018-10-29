@@ -50,7 +50,7 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
+def adj_income_process(income, sigma_perm, sigma_tran, BORROWING_AMT, n_sim):
     # generate random walk and normal r.v.
     np.random.seed(0)
     rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - START_AGE + 1))
@@ -117,10 +117,6 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     COH[COH < grid_w[0]] = grid_w[0]
 
     spline = CubicSpline(grid_w, v, bc_type='natural')  # minimum curvature in both ends
-
-    # p = mp.Pool(processes=mp.cpu_count())
-    # v_w = p.apply(spline, args=(COH,))
-    # p.close()
 
     v_w = np.zeros((N_SIM, N_C))
     for i in range(N_SIM):

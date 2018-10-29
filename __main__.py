@@ -2,7 +2,7 @@
 import argparse
 from main import main
 
-VERSION = 'ISA_MC'
+VERSION = 'ISA-Purdue'
 
 #SIDHYA change
 if __name__ == "__main__":
@@ -19,4 +19,4 @@ if __name__ == "__main__":
     else:
         gamma = float(gamma)
 
-    main(version=VERSION, n_sim=args.n_sim,gamma=gamma)
+    main(version=VERSION, n_sim=args.n_sim, gamma=gamma)

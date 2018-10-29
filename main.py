@@ -13,28 +13,28 @@ import itertools
 
 
 #SIDHYA CHANGE
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
-    term = int(param_pair[0])
-    rho = param_pair[1]
+def run_model(params, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
+    principal = params
     
     start = time.time()
 
     # adj income
     #SIDHYA CHANGE
-    adj_income, payment, income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+    adj_income, payment, income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, n_sim)
 
-    adj_inc_proc = pd.DataFrame(adj_income)
-    adj_inc_fp = os.path.join(base_path, 'results', 'adj_inc_proc.csv')
-    adj_inc_proc.to_csv(adj_inc_fp)
-
-    pmt_proc = pd.DataFrame(payment)
-    pmt_fp = os.path.join(base_path, 'results', 'pmt_proc.csv')
-    pmt_proc.to_csv(pmt_fp)
-
-    # output income process
-    inc_proc = pd.DataFrame(income)
-    inc_fp = os.path.join(base_path, 'results', 'inc_proc.csv')
-    inc_proc.to_csv(inc_fp)
+    # # output income
+    # adj_inc_proc = pd.DataFrame(adj_income)
+    # adj_inc_fp = os.path.join(base_path, 'results', 'adj_inc_proc.csv')
+    # adj_inc_proc.to_csv(adj_inc_fp)
+    #
+    # pmt_proc = pd.DataFrame(payment)
+    # pmt_fp = os.path.join(base_path, 'results', 'pmt_proc.csv')
+    # pmt_proc.to_csv(pmt_fp)
+    #
+    # # output income process
+    # inc_proc = pd.DataFrame(income)
+    # inc_fp = os.path.join(base_path, 'results', 'inc_proc.csv')
+    # inc_proc.to_csv(inc_fp)
 
     # get conditional survival probabilities
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
@@ -44,8 +44,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     #                  DP - generate consumption functions                    #
     ###########################################################################
     today = datetime.now().date()
-    c_func_fp = os.path.join(base_path, 'results', f'c_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
+    c_func_fp = os.path.join(base_path, 'results', f'c_ISA_Purdue_{principal}_{gamma}_{today}.xlsx')
+    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_Purdue_{principal}_{gamma}_{today}.xlsx')
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
@@ -60,15 +60,14 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
 
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-    #SIDHYA CHANGE
-    ##Expanding Factor
-    print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+
+    print(f'########## Principal: {principal} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
-    return term, rho, gamma, c_ce
+    return principal, gamma, c_ce
 
 
 def main(version, n_sim, gamma):
-    assert version == 'ISA_MC'
+    assert version == 'ISA-Purdue'
     start_time = time.time()
 
     ###########################################################################
@@ -97,7 +96,7 @@ def main(version, n_sim, gamma):
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
     #SIDHYA CHANGE
     isa_params = pd.read_excel(isa_fp)
-    isa_params = isa_params[["Term", "1-rho"]].copy()
+    isa_params = isa_params[["Principal"]].copy()
     #SIDHYA CHANGE
     param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
@@ -109,7 +108,7 @@ def main(version, n_sim, gamma):
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
 
-    c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'gamma', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['Principal', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
     # Params check
