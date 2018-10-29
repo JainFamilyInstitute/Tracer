@@ -34,8 +34,8 @@ income_bf_ret = cal_income(age_coeff)
 sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
 sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
 
-param_pair = [0, 0]
+params = 33934
 n_sim = 10000
 gamma = 2.0
-_, _, _, ce = run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma)
-print(ce)
+run_model(params, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma)
+
