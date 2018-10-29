@@ -17,8 +17,8 @@ start_time = time.time()
 income_fn = 'age_coefficients_and_var.xlsx'
 surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
 base_path = os.path.dirname(__file__)
-income_fp = os.path.join(base_path, 'data', income_fn)
-mortal_fp = os.path.join(base_path, 'data', surviv_fn)
+income_fp = os.path.join(base_path, income_fn)
+mortal_fp = os.path.join(base_path, surviv_fn)
 
 # read raw data
 age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
