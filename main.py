@@ -67,7 +67,7 @@ income_ret = income_bf_ret[-1]
 sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
 sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
 
-gamma_arr = np.arange(1, 5, 1)
+gamma_arr = [2] # np.arange(1, 5, 1)
 
 with mp.Pool(processes=mp.cpu_count()) as p:
     c_ce = p.starmap(run_model, gamma_arr[None].T)
