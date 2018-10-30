@@ -7,7 +7,7 @@ VERSION = 'DEBT'
 #SIDHYA change
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Run the ISA version of the model.')
+        description='Run the Debt version of the model.')
 
     parser.add_argument('n_sim', metavar='N_SIM', type=int, help='Number of MC loops.')
     parser.add_argument('-g','--gamma', metavar='GAMMA', type=str, help='Gamma (float; if not specified, uses all of [1.0, 2.0, 3.0, 4.0])',default='ALL')
