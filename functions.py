@@ -65,6 +65,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     # unemployment risk
     # generate bernoulli random variable
     p = 1 - unempl_rate[AltDeg]
+    np.random.seed(2)
     r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, N_SIM)).astype(float)
     r[r == 0] = unemp_frac[AltDeg]
     ones = np.ones((END_AGE - RETIRE_AGE, N_SIM))
@@ -97,7 +98,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, N_SIM):
     # adj_Y = Y
     # adj_Y[:, :TERM] *= rho
 
-    return adj_Y
+    return adj_Y, Y, P
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
