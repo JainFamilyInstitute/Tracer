@@ -1,7 +1,5 @@
 import os
 import time
-import numpy as np
-import pandas as pd
 from functions import *
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
@@ -11,20 +9,13 @@ from datetime import datetime
 import multiprocessing as mp
 import itertools
 
-#SIDHYA CHANGE
+
 def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
-    #principal = param_pair[0]
-    #ppt_bar = param_pair[1]
-    term = int(param_pair[0])
-    rho = param_pair[1]
+    principal = param_pair[0]
+    ppt_bar = param_pair[1]
     
     start = time.time()
-
-    # adj income
-    #SIDHYA CHANGE
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
-
-    # get conditional survival probabilities
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, ppt_bar, n_sim)
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
     cond_prob = cond_prob.values
 
@@ -32,8 +23,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     #                  DP - generate consumption functions                    #
     ###########################################################################
     today = datetime.now().date()
-    c_func_fp = os.path.join(base_path, 'results', f'c_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
-    v_func_fp = os.path.join(base_path, 'results', f'v_ISA_{term}_{rho}_{gamma}_{today}.xlsx')
+    c_func_fp = os.path.join(base_path, 'results', f'c_Debt_{ppt_bar}_Gamma{gamma}_{today}.xlsx')
+    v_func_fp = os.path.join(base_path, 'results', f'v_c_Debt_{ppt_bar}_Gamma{gamma}_{today}.xlsx')
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
@@ -43,60 +34,49 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
-    #adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran)
     c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
-
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
-    #SIDHYA CHANGE
-    ##Expanding Factor
+
     print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
 
     #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
     #SIDHYA CHANGE
-    return term, rho, gamma, c_ce
+    return principal, ppt_bar, gamma, c_ce
+
 
 def main(version, n_sim, gamma):
-    assert version == 'ISA'
+    assert version == 'DEBT'
     start_time = time.time()
 
     ###########################################################################
     #                      Setup - file path & raw data                       #
     ###########################################################################
-    # set file path
-    #SIDHYA CHANGE
     income_fn = 'age_coefficients_and_var.xlsx'
     surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
-    isa_fn = 'Loop on term and rho.xlsx'
+    debt_fn = 'Loop on Principal for Loan.xlsx'
     base_path = os.path.dirname(__file__)
     income_fp = os.path.join(base_path, 'data', income_fn)
     mortal_fp = os.path.join(base_path, 'data', surviv_fn)
-    isa_fp = os.path.join(base_path, 'data', isa_fn)
+    debt_fp = os.path.join(base_path, 'data', debt_fn)
     ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
-    # read raw data
     age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
-
 
     ###########################################################################
     #              Setup - income process & std & survival prob               #
     ###########################################################################
     income_bf_ret = cal_income(age_coeff)
-    # income_ret = income_bf_ret[-1]
 
-    # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
-    #SIDHYA CHANGE
-    isa_params = pd.read_excel(isa_fp)
-    isa_params = isa_params[["Term", "1-rho"]].copy()
-    #SIDHYA CHANGE
-    param_pair = list(isa_params.values)
+    debt_params = pd.read_excel(debt_fp)
+    debt_params = debt_params[["Principal", "ppt-bar"]].copy()
+    param_pair = list(debt_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
-    if isinstance(gamma,float):
+    if isinstance(gamma, float):
         gamma = [gamma]
 
     search_args = list(itertools.product(param_pair, *fixed_args, gamma))
@@ -107,7 +87,7 @@ def main(version, n_sim, gamma):
     # for i in range(len(gamma_arr)):
     #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
 
-    c_ce_df = pd.DataFrame(c_ce, columns=['Term', 'Rho', 'gamma', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['Principal', 'ppt-bar', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
 

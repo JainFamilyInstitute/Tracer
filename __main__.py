@@ -19,4 +19,4 @@ if __name__ == "__main__":
     else:
         gamma = float(gamma)
 
-    main(version=VERSION, n_sim=args.n_sim,gamma=gamma)
+    main(version=VERSION, n_sim=args.n_sim, gamma=gamma)
