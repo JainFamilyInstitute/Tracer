@@ -75,7 +75,9 @@ def adj_income_process(income, sigma_perm, sigma_tran, term, rho, n_sim):
     adj_Y = Y.copy()
     adj_Y[:, :term] *= rho
 
-    return adj_Y
+    P = Y - adj_Y
+
+    return adj_Y, Y, P
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):

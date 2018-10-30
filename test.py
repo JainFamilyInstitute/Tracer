@@ -63,7 +63,47 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 # run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
 
 
-# output utils
+# # output utils
+# def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
+#     term = 10
+#
+#     start = time.time()
+#
+#     cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_ISA_*'))
+#
+#     col_names = []
+#     for fp in cfunc_fps:
+#         c_func_df = pd.read_excel(fp)
+#         rho = float(fp.split('/')[-1].split('_')[3])
+#         gamma = float(fp.split('/')[-1].split('_')[4])
+#         col_names.append(str(rho)+'_'+str(gamma))
+#
+#         adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+#
+#         c_proc, _ = generate_consumption_process(adj_income, c_func_df, adj_income.shape[0])
+#         prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+#         ce, util = cal_ce_agent(prob, c_proc, gamma)
+#
+#         print(
+#             f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} ##########')
+#         print(f"------ {time.time() - start} seconds ------")
+#
+#         col_names = [str(x + START_AGE) for x in range(END_AGE - START_AGE + 1)]
+#         df = pd.DataFrame(util, columns=['Utility'])
+#         df['CE'] = ce
+#         df.to_csv(os.path.join(base_path, 'results', f'ISA_Utils_CEs_rho{rho}_Gamma{gamma}.csv'))
+#
+#
+# run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
+
+q_dict = {
+    1: '1st quantile',
+    2: '2nd quantile',
+    3: '3rd quantile',
+    4: '4th quantile',
+}
+
+
 def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
     term = 10
 
@@ -71,27 +111,56 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
 
     cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_ISA_*'))
 
-    col_names = []
+    op = []
+    idx_names = []
     for fp in cfunc_fps:
         c_func_df = pd.read_excel(fp)
         rho = float(fp.split('/')[-1].split('_')[3])
         gamma = float(fp.split('/')[-1].split('_')[4])
-        col_names.append(str(rho)+'_'+str(gamma))
 
-        adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+        iterables = [['1st quantile', '2nd quantile', '3rd quantile', '4th quantile'],
+                     ['Income', 'Payments', 'Adjusted Income', 'Consumption', 'Utility']]
+        index = pd.MultiIndex.from_product(iterables, names=['Quantiles', 'Variables'])
+        column = np.arange(22, 101)
+        ipcu_df = pd.DataFrame(index=index, columns=column)
 
-        c_proc, _ = generate_consumption_process(adj_income, c_func_df, adj_income.shape[0])
-        prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-        ce, util = cal_ce_agent(prob, c_proc, gamma)
+        idx_names.append(str(rho)+'_'+str(gamma))
+
+        adj_income, income, payments = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+
+        single_op = []
+        for l, r, i in zip(np.arange(0, 1, 0.25), np.arange(0, 1, 0.25) + 0.25, np.arange(4) + 1):
+            discount_array = DELTA**np.arange(adj_income.shape[1])
+            discount_Y = np.multiply(adj_income, discount_array)
+            npvs = np.sum(discount_Y, axis=1)
+            allowed_rows = np.where(np.logical_and(npvs > np.quantile(npvs, l), npvs < np.quantile(npvs, r)))
+            cur_intvl = adj_income[allowed_rows]
+
+            # op: Income, Payment, Adjusted Income
+            q_ave_inc = np.mean(income[allowed_rows], axis=0)
+            q_ave_pmt = np.mean(payments[allowed_rows], axis=0)
+            q_ave_adj_inc = np.mean(cur_intvl, axis=0)
+
+            c_proc, _ = generate_consumption_process(cur_intvl, c_func_df, cur_intvl.shape[0])
+            # op: Consumption
+            q_ave_c = np.mean(c_proc, axis=0)
+
+            prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+            c_ce, _, util = cal_certainty_equi(prob, c_proc, gamma)
+            # op: Utility
+            q_ave_util = np.mean(util, axis=0)
+
+            single_op.append(c_ce)
+            ipcu_df.loc[q_dict[i]] = np.array([q_ave_inc, q_ave_pmt, q_ave_adj_inc, q_ave_c, q_ave_util])
 
         print(
-            f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} ##########')
+            f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
         print(f"------ {time.time() - start} seconds ------")
+        op.append(single_op)
 
-        col_names = [str(x + START_AGE) for x in range(END_AGE - START_AGE + 1)]
-        df = pd.DataFrame(util, columns=['Utility'])
-        df['CE'] = ce
-        df.to_csv(os.path.join(base_path, 'results', f'ISA_Utils_CEs_rho{rho}_Gamma{gamma}.csv'))
+        ipcu_df.to_csv(os.path.join(base_path, 'results', f'ISA_quantile_IPCU_{rho}_gamma_{gamma}.csv'))
+    df = pd.DataFrame(op, index=idx_names)
+    df.to_csv(os.path.join(base_path, 'results', 'ISA_quantile_CEs.csv'))
 
 
 run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)

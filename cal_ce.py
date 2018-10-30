@@ -71,7 +71,7 @@ def cal_certainty_equi(prob, c, GAMMA):
         c_ce = ((1 - GAMMA) * np.mean(simu_util) / np.sum((delta * prob)[:44]))**(1 / (1-GAMMA))
     total_w_ce = prob[:44].sum() * c_ce   # 42.7
 
-    return c_ce, total_w_ce
+    return c_ce, total_w_ce, util_c
 
 
 def cal_ce_agent(prob, c, GAMMA):
