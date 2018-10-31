@@ -38,11 +38,8 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
 
-    print(f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
     print(f"------ {time.time() - start} seconds ------")
-
-    #print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
-    #SIDHYA CHANGE
+    print(f'########## Gamma: {ppt_bar} | CE: {c_ce} | {time.time() - start} seconds ##########')
     return principal, ppt_bar, gamma, c_ce
 
 
