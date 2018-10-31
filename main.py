@@ -26,11 +26,11 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     c_func_fp = os.path.join(base_path, 'results', f'c_Debt_{ppt_bar}_Gamma{gamma}_{today}.xlsx')
     v_func_fp = os.path.join(base_path, 'results', f'v_c_Debt_{ppt_bar}_Gamma{gamma}_{today}.xlsx')
     # shortcut:
-    # c_func_df = pd.read_excel(c_func_fp)
-    # v_func_df = pd.read_excel(v_func_fp)
-    c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
-    c_func_df.to_excel(c_func_fp)
-    v_func_df.to_excel(v_func_fp)
+    c_func_df = pd.read_excel(c_func_fp)
+    v_func_df = pd.read_excel(v_func_fp)
+    # c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
+    # c_func_df.to_excel(c_func_fp)
+    # v_func_df.to_excel(v_func_fp)
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
