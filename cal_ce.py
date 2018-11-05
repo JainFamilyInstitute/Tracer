@@ -43,16 +43,16 @@ def generate_consumption_process(inc, c_func_df, N_SIM):
         cash_on_hand[:, t+1] = (1 + R) * (cash_on_hand[:, t] - c[:, t]) + inc[:, t+1]  # 1-78
     c[:, -1] = c_func(c_func_df, cash_on_hand[:, -1], END_AGE)   # consumption at age 100
 
-    # GRAPH - Average Cash-on-hand & consumption over lifetime
-    ages = [str(x + START_AGE) for x in range(END_AGE - START_AGE + 1)]
-    plt.plot(ages, cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
-    plt.plot(ages, c.mean(axis=0), linestyle='-.', color='k', label='consumption')
-    plt.title(f'Average Cash-on-hand and Consumption over the life cycle')
-    plt.xlabel('Age')
-    plt.ylabel('Dollar')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # # GRAPH - Average Cash-on-hand & consumption over lifetime
+    # ages = [str(x + START_AGE) for x in range(END_AGE - START_AGE + 1)]
+    # plt.plot(ages, cash_on_hand.mean(axis=0), linestyle='-', color='k', label='cash-on-hand')
+    # plt.plot(ages, c.mean(axis=0), linestyle='-.', color='k', label='consumption')
+    # plt.title(f'Average Cash-on-hand and Consumption over the life cycle')
+    # plt.xlabel('Age')
+    # plt.ylabel('Dollar')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
 
     return c, inc
 
