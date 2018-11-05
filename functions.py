@@ -96,7 +96,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, N_SIM):
             D[cond, t] = 0
 
     adj_Y = Y - P
-    return adj_Y
+    return adj_Y, P, Y
 
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):

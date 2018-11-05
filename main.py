@@ -19,7 +19,7 @@ def run_model(params, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_pat
     start = time.time()
 
     # adj income
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, n_sim)
+    adj_income, payment, income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, principal, n_sim)
 
     # get conditional survival probabilities
     cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
