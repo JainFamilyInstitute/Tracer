@@ -96,12 +96,6 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 #
 # run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
 
-q_dict = {
-    1: '1st quantile',
-    2: '2nd quantile',
-    3: '3rd quantile',
-    4: '4th quantile',
-}
 
 
 def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
@@ -109,7 +103,7 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
 
     start = time.time()
 
-    cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_ISA_*'))
+    cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_ISA_*_2018-10-31.xlsx'))
 
     op = []
     idx_names = []
@@ -118,9 +112,9 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
         rho = float(fp.split('/')[-1].split('_')[3])
         gamma = float(fp.split('/')[-1].split('_')[4])
 
-        iterables = [['1st quantile', '2nd quantile', '3rd quantile', '4th quantile'],
-                     ['Income', 'Payments', 'Adjusted Income', 'Consumption', 'Utility']]
-        index = pd.MultiIndex.from_product(iterables, names=['Quantiles', 'Variables'])
+        iterables = [[1, 2, 3, 4],
+                     ['Income', 'Payment', 'Consumption', 'Utility']]
+        index = pd.MultiIndex.from_product(iterables, names=['Quartile', 'Category'])
         column = np.arange(22, 101)
         ipcu_df = pd.DataFrame(index=index, columns=column)
 
@@ -139,7 +133,6 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
             # op: Income, Payment, Adjusted Income
             q_ave_inc = np.mean(income[allowed_rows], axis=0)
             q_ave_pmt = np.mean(payments[allowed_rows], axis=0)
-            q_ave_adj_inc = np.mean(cur_intvl, axis=0)
 
             c_proc, _ = generate_consumption_process(cur_intvl, c_func_df, cur_intvl.shape[0])
             # op: Consumption
@@ -151,7 +144,7 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
             q_ave_util = np.mean(util, axis=0)
 
             single_op.append(c_ce)
-            ipcu_df.loc[q_dict[i]] = np.array([q_ave_inc, q_ave_pmt, q_ave_adj_inc, q_ave_c, q_ave_util])
+            ipcu_df.loc[i] = np.array([q_ave_inc, q_ave_pmt, q_ave_c, q_ave_util])
 
         print(
             f'########## Term: {term} | Rho: {rho:.2f} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
