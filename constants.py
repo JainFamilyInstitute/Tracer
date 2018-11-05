@@ -48,7 +48,7 @@ unempl_rate = {
 }
 
 # rate
-rate = 0.141685881
+rate = 0.141518628781155
 
 #expanding factor
 gamma_exp_frac = {
