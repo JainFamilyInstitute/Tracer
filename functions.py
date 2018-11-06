@@ -78,10 +78,10 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, n_sim):
     P = np.zeros(Y.shape)
 
     for t in range(END_AGE - START_AGE):
-        cond1 = np.logical_and(Y[:, t] >= 5 * P_BAR, D[:, t] >= P_BAR)
-        cond2 = np.logical_and(Y[:, t] >= 5 * D[:, t], D[:, t] < P_BAR)
-        cond3 = np.logical_and(Y[:, t] < 5 * P_BAR, D[:, t] >= P_BAR)
-        cond4 = np.logical_and(Y[:, t] < 5 * D[:, t], D[:, t] < P_BAR)
+        cond1 = np.logical_and(Y[:, t] >= 2 * P_BAR, D[:, t] >= P_BAR)
+        cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < P_BAR)
+        cond3 = np.logical_and(Y[:, t] < 2 * P_BAR, D[:, t] >= P_BAR)
+        cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
 
         P[cond1, t] = P_BAR
         P[cond2, t] = D[cond2, t]
