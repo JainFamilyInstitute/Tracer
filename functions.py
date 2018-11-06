@@ -89,6 +89,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, n_sim):
         P[cond4, t] = Y[cond4, t] / 2
 
         D[:, t + 1] = D[:, t] * (1 + rate) - P[:, t]
+        D[cond2, t + 1] = 0
     adj_Y = Y - P
     return adj_Y
 
