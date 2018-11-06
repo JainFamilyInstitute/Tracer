@@ -97,7 +97,7 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 # run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
 
 
-
+# for quartile
 def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
     term = 10
 
