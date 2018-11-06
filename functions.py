@@ -50,28 +50,33 @@ def read_input_data(income_fp, mortal_fp):
     return age_coeff, std, cond_prob
 
 
-def adj_income_process(income, sigma_perm, sigma_tran, BORROWING_AMT, n_sim):
-    # generate random walk and normal r.v.
-    np.random.seed(0)
-    rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - START_AGE + 1))
-    rand_walk = np.cumsum(rn_perm, axis=1)
-    np.random.seed(1)
-    rn_tran = np.random.normal(MU, sigma_tran, (n_sim, RETIRE_AGE - START_AGE + 1))
-    inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
+def adj_income_process(income, sigma_perm, sigma_tran, BORROWING_AMT, n_sim, path=None):
+    if path is not None:
+        fixed_income_fp = os.path.join(path, 'data', 'Fixed Income_Coll Grad.csv')
+        df = pd.read_csv(fixed_income_fp)
+        Y = df.values[:, 1:]
+    else:
+        # generate random walk and normal r.v.
+        np.random.seed(0)
+        rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - START_AGE + 1))
+        rand_walk = np.cumsum(rn_perm, axis=1)
+        np.random.seed(1)
+        rn_tran = np.random.normal(MU, sigma_tran, (n_sim, RETIRE_AGE - START_AGE + 1))
+        inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
 
-    # - retirement
-    ret_income_vec = ret_frac[AltDeg] * np.tile(inc_with_inc_risk[:, -1], (END_AGE - RETIRE_AGE, 1)).T
-    inc_with_inc_risk = np.append(inc_with_inc_risk, ret_income_vec, axis=1)
+        # - retirement
+        ret_income_vec = ret_frac[AltDeg] * np.tile(inc_with_inc_risk[:, -1], (END_AGE - RETIRE_AGE, 1)).T
+        inc_with_inc_risk = np.append(inc_with_inc_risk, ret_income_vec, axis=1)
 
-    # unemployment risk
-    # generate bernoulli random variable
-    np.random.seed(seed=2)
-    p = 1 - unempl_rate[AltDeg]
-    r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, n_sim)).astype(float)
-    r[r == 0] = unemp_frac[AltDeg]
-    ones = np.ones((END_AGE - RETIRE_AGE, n_sim))
-    bern = np.append(r, ones, axis=0)
-    Y = np.multiply(inc_with_inc_risk, bern.T)
+        # unemployment risk
+        # generate bernoulli random variable
+        p = 1 - unempl_rate[AltDeg]
+        np.random.seed(2)
+        r = bernoulli.rvs(p, size=(RETIRE_AGE - START_AGE + 1, n_sim)).astype(float)
+        r[r == 0] = unemp_frac[AltDeg]
+        ones = np.ones((END_AGE - RETIRE_AGE, n_sim))
+        bern = np.append(r, ones, axis=0)
+        Y = np.multiply(inc_with_inc_risk, bern.T)
 
     # adjust income with ISA
     inc_threshold = PVT_MTPLR * PVT_LEVEL
