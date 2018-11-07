@@ -69,7 +69,7 @@ def main(version, n_sim, gamma):
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
     debt_params = pd.read_excel(debt_fp)
-    debt_params = debt_params[["Principal", "ppt-bar"]].copy()
+    debt_params = debt_params[["New Principal", "ppt-bar"]].copy()
     param_pair = list(debt_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
 
@@ -84,7 +84,7 @@ def main(version, n_sim, gamma):
     # for i in range(len(gamma_arr)):
     #     c_ce[i, 0], c_ce[i, 1] = run_model(gamma_arr[i])
 
-    c_ce_df = pd.DataFrame(c_ce, columns=['Principal', 'ppt-bar', 'gamma', 'Consumption CE'])
+    c_ce_df = pd.DataFrame(c_ce, columns=['New Principal', 'ppt-bar', 'gamma', 'Consumption CE'])
     c_ce_df.to_excel(ce_fp)
 
 
