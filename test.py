@@ -222,70 +222,70 @@ sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[Al
 ###############################################################################################################
 
 debt_dict = {
-    805: 5000,
-    4832: 30000,
-    11276: 70000,
+    805: 5657.12,
+    4832: 33942.720075,
+    11276: 79199.68018,
 }
 
 
-# def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
-#     agent_pctl = [0.125, 0.375, 0.625, 0.875]
-#     start = time.time()
-#
-#     cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Debt*'))
-#
-#     op = []
-#     idx_names = []
-#     for fp in cfunc_fps:
-#         c_func_df = pd.read_excel(fp)
-#         gamma = float(fp.split('.')[-3][-1])
-#         ppt_bar = float(fp.split('/')[-1].split('_')[2])
-#
-#         iterables = [[1, 2, 3, 4],
-#                      ['Income', 'Payment', 'Consumption', 'Utility']]
-#         index = pd.MultiIndex.from_product(iterables, names=['Quartile', 'Category'])
-#         column = np.arange(22, 101)
-#         ipcu_df = pd.DataFrame(index=index, columns=column)
-#
-#         if int(ppt_bar) in debt_dict:
-#             principal = debt_dict[int(ppt_bar)]
-#             idx_names.append(str(ppt_bar) + '_' + str(gamma))
-#
-#             adj_income, income, payments = adj_income_process(income_bf_ret, sigma_perm, sigma_tran,
-#                                                               principal, ppt_bar, n_sim, path=base_path)
-#
-#             single_op = []
-#             for ap, i in zip(agent_pctl, np.arange(4) + 1):
-#                 discount_array = DELTA**np.arange(income.shape[1])
-#                 discount_Y = np.multiply(income, discount_array)
-#                 npvs = np.sum(discount_Y, axis=1)
-#                 allowed_rows = (npvs == np.sort(npvs)[int(ap*n_sim-1)])
-#
-#                 # op: Income, Payment, Adjusted Income
-#                 agent_inc = income[allowed_rows]
-#                 agent_pmt = payments[allowed_rows]
-#
-#                 c_proc, _ = generate_consumption_process(agent_inc, c_func_df, agent_inc.shape[0])
-#                 # op: Consumption
-#                 agent_c = c_proc
-#
-#                 prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
-#                 c_ce, _, util = cal_certainty_equi(prob, c_proc, gamma)
-#                 # op: Utility
-#                 agent_util = util
-#                 single_op.append(c_ce)
-#                 ipcu_df.loc[i] = np.squeeze(np.array([agent_inc, agent_pmt, agent_c, agent_util]))
-#
-#             print(f'########## ppt_bar: {ppt_bar} | principal: {principal} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
-#             print(f"------ {time.time() - start} seconds ------")
-#             op.append(single_op)
-#
-#             ipcu_df.to_csv(os.path.join(base_path, 'results', f'debt_quartile_IPCU_{ppt_bar}_gamma_{gamma}.csv'))
-#     df = pd.DataFrame(op, index=idx_names)
-#     df.to_csv(os.path.join(base_path, 'results', 'debt_quartile_CEs.csv'))
-#
-#
-# run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
+def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim):
+    agent_pctl = [0.125, 0.375, 0.625, 0.875]
+    start = time.time()
+
+    cfunc_fps = glob.glob(os.path.join(base_path, 'data', 'c_Debt*'))
+
+    op = []
+    idx_names = []
+    for fp in cfunc_fps:
+        c_func_df = pd.read_excel(fp)
+        gamma = float(fp.split('.')[-3][-1])
+        ppt_bar = float(fp.split('/')[-1].split('_')[2])
+
+        iterables = [[1, 2, 3, 4],
+                     ['Income', 'Payment', 'Consumption', 'Utility']]
+        index = pd.MultiIndex.from_product(iterables, names=['Quartile', 'Category'])
+        column = np.arange(22, 101)
+        ipcu_df = pd.DataFrame(index=index, columns=column)
+
+        if int(ppt_bar) in debt_dict:
+            principal = debt_dict[int(ppt_bar)]
+            idx_names.append(str(ppt_bar) + '_' + str(gamma))
+
+            adj_income, income, payments = adj_income_process(income_bf_ret, sigma_perm, sigma_tran,
+                                                              principal, ppt_bar, n_sim, path=base_path)
+
+            single_op = []
+            for ap, i in zip(agent_pctl, np.arange(4) + 1):
+                discount_array = DELTA**np.arange(income.shape[1])
+                discount_Y = np.multiply(income, discount_array)
+                npvs = np.sum(discount_Y, axis=1)
+                allowed_rows = (npvs == np.sort(npvs)[int(ap*n_sim-1)])
+
+                # op: Income, Payment, Adjusted Income
+                agent_inc = income[allowed_rows]
+                agent_pmt = payments[allowed_rows]
+
+                c_proc, _ = generate_consumption_process(agent_inc, c_func_df, agent_inc.shape[0])
+                # op: Consumption
+                agent_c = c_proc
+
+                prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+                c_ce, _, util = cal_certainty_equi(prob, c_proc, gamma)
+                # op: Utility
+                agent_util = util
+                single_op.append(c_ce)
+                ipcu_df.loc[i] = np.squeeze(np.array([agent_inc, agent_pmt, agent_c, agent_util]))
+
+            print(f'########## ppt_bar: {ppt_bar} | principal: {principal} | Gamma: {gamma} | Exp_Frac: {gamma_exp_frac[gamma]} | CE: {c_ce:.2f} ##########')
+            print(f"------ {time.time() - start} seconds ------")
+            op.append(single_op)
+
+            ipcu_df.to_csv(os.path.join(base_path, 'results', f'debt_quartile_IPCU_{ppt_bar}_gamma_{gamma}.csv'))
+    df = pd.DataFrame(op, index=idx_names)
+    df.to_csv(os.path.join(base_path, 'results', 'debt_quartile_CEs.csv'))
+
+
+run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, 10000)
 
 
 # # cg for quantile
