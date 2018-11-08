@@ -84,7 +84,7 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, P_BAR, n_sim):
         cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < P_BAR)
 
         P[cond1, t] = P_BAR
-        P[cond2, t] = D[cond2, t]
+        P[cond2, t] = D[cond2, t] * (1 + rate)
         P[cond3, t] = Y[cond3, t] / 2
         P[cond4, t] = Y[cond4, t] / 2
 
