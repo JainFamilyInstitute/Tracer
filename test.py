@@ -90,8 +90,9 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
             # op: Income, Payment, Adjusted Income
             agent_inc = income[allowed_rows]
             agent_pmt = payment[allowed_rows]
+            agent_adj_inc = adj_income[allowed_rows]
 
-            c_proc, _ = generate_consumption_process(agent_inc, c_func_df, agent_inc.shape[0])
+            c_proc, _ = generate_consumption_process(agent_adj_inc, c_func_df, agent_adj_inc.shape[0])
             # op: Consumption
             agent_c = c_proc
 
