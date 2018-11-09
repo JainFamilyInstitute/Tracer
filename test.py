@@ -143,8 +143,8 @@ def run_model(income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim
 
         single_op = []
         for l, r, i in zip(np.arange(0, 1, 0.25), np.arange(0, 1, 0.25) + 0.25, np.arange(4) + 1):
-            discount_array = DELTA**np.arange(adj_income.shape[1])
-            discount_Y = np.multiply(adj_income, discount_array)
+            discount_array = DELTA**np.arange(income.shape[1])
+            discount_Y = np.multiply(income, discount_array)
             npvs = np.sum(discount_Y, axis=1)
             allowed_rows = np.where(np.logical_and(npvs > np.quantile(npvs, l), npvs < np.quantile(npvs, r)))
             cur_intvl = adj_income[allowed_rows]
