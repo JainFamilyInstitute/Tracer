@@ -89,22 +89,25 @@ def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, n_sim, path=No
 
     for t in range(END_AGE - START_AGE):
         if t < 20:
-            cond1 = P[:, t] >= D[:, t]*rate
+            cond0 = P[:, t] >= D[:, t]
+            P[cond0, t] = D[cond0, t]
+            # D[cond0, t] = 0
+            cond1 = np.logical_and(P[:, t] >= D[:, t] * rate, P[:, t] < D[:, t])
             D[cond1, t + 1] = D[cond1, t] * (1 + rate) - P[cond1, t]
-            cond2 = P[:, t] < D[:, t]*rate
-            D[cond2, t + 1] = D[cond2, t] + (D[cond2, t]*rate - P[cond2, t]) / 2
+            cond2 = P[:, t] < D[:, t] * rate
+            D[cond2, t + 1] = D[cond2, t] + (D[cond2, t] * rate - P[cond2, t]) / 2
         else:
             D[:, t] = 0
 
-    for t in range(END_AGE - START_AGE):
-        if t < 20:
-            cond = D[:, t] < 0
-            P[cond, t-1] = D[cond, t-1]
-            D[cond, t] = 0
+    # for t in range(END_AGE - START_AGE):
+    #     if t < 20:
+    #         cond = D[:, t] < 0
+    #         P[cond, t-1] = D[cond, t-1]
+    #         D[cond, t] = 0
 
     adj_Y = Y - P
-    return adj_Y, P, Y
-
+    return adj_Y, P, Y, D
+    # return Y, P, D
 
 def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
 
