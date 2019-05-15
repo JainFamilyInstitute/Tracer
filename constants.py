@@ -24,7 +24,7 @@ run_dp = True
 
 education_level = {
     2: 'High School Graduates',
-    2: 'Some College',
+    3: 'Some College',
     4: 'College Graduates'
 }
 
