@@ -1,7 +1,9 @@
 ###########################################################################
 #                            Set Constants                                #
 ###########################################################################
-START_AGE = 22            #
+#                  Sidhya Edit for new Rerun May 15 2019                  #
+
+START_AGE = 22            #Set to 18 if High School Graduate, 20 if Some College and 22 if College Graduate
 END_AGE = 100             #
 RETIRE_AGE = 65           # retirement age
 N_W = 501
@@ -17,16 +19,16 @@ MU = 0                    # expectation of income shocks
 N_SIM = 100000            # number of draws
 INIT_WEALTH = 0
 
-AltDeg = 2
+AltDeg = 4
 run_dp = True
 
 education_level = {
-    1: 'No High School',
     2: 'High School Graduates',
+    2: 'Some College',
     4: 'College Graduates'
 }
 
-# replacement rate of retirement earnings (lambda)
+# replacement rate of retirement earnings (lambda) ##TO BE CHANGED
 ret_frac = {
     1: 0.6005,
     2: 0.5788,
@@ -35,14 +37,14 @@ ret_frac = {
 
 # replacement rate of unemployment earnings (theta)
 unemp_frac = {
-    1: 0.7891,
-    2: 0.7017,
-    4: 0.5260 # 1-10**(-5),  # 0.5260,
+    2: 0.6646,
+    3: 0.6157,
+    4: 0.5285 # 1-10**(-5),  # 0.5260,
 }
 
 # probability of suffering an unemployed spell (pi)
 unempl_rate = {
-    1: 0.2024,
-    2: 0.1438,
-    4: 0.0738 # 10**(-5),  # 0.0738,
+    2: 0.1431,
+    3: 0.1132,
+    4: 0.0703 # 10**(-5),  # 0.0738,
 }
