@@ -14,37 +14,37 @@ LOWER_BOUND_C = 0
 R = 0.02                  # risk-free rate
 DELTA = 0.99              # discount factor
 MU = 0                    # expectation of income shocks
-# N_SIM = 10000            # number of draws
+N_SIM = 10000            # number of draws
 INIT_WEALTH = 0
 
 AltDeg = 4
 run_dp = True
 
 education_level = {
-    1: 'No High School',
     2: 'High School Graduates',
+    3: 'Some College',
     4: 'College Graduates'
 }
 
-# replacement rate of retirement earnings (lambda)
+# replacement rate of retirement earnings (lambda) 
 ret_frac = {
-    1: 0.6005,
-    2: 0.5788,
-    4: 0.4516,
+    2: 0.5790,
+    3: 0.5596,
+    4: 0.4650,
 }
 
 # replacement rate of unemployment earnings (theta)
 unemp_frac = {
-    1: 0.7891,
-    2: 0.7017,
-    4: 0.5260 # 1-10**(-5),  # 0.5260,
+    2: 0.6646,
+    3: 0.6157,
+    4: 0.5285 
 }
 
 # probability of suffering an unemployed spell (pi)
 unempl_rate = {
-    1: 0.2024,
-    2: 0.1438,
-    4: 0.0738 # 10**(-5),  # 0.0738,
+    2: 0.1431,
+    3: 0.1132,
+    4: 0.0703
 }
 
 #SIDHYA CHANGE
