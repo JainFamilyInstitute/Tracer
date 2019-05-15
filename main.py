@@ -44,8 +44,8 @@ start_time = time.time()
 #                      Setup - file path & raw data                       #
 ###########################################################################
 # set file path
-income_fn = 'age_coefficients_and_var.xlsx'
-surviv_fn = 'Conditional Survival Prob Feb 16.xlsx'
+income_fn = 'age_coefficients_and_var_May152019.xlsx'
+surviv_fn = 'Conditional Survival Prob_May152019.xlsx'
 isa_fn = 'Loop on rho.xlsx'
 base_path = os.path.dirname(__file__)
 income_fp = os.path.join(base_path, income_fn)
