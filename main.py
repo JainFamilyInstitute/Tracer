@@ -1,11 +1,10 @@
 import os
 import time
-import numpy as np
 import pandas as pd
-from functions import *
+from functions import adj_income_process, read_input_data, cal_income
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
-from constants import *
+from constants import start_ages, END_AGE, gamma_exp_frac, education_level, ret_frac, unemp_rate, unemp_frac, INIT_WEALTH
 from datetime import datetime
 
 import multiprocessing as mp
@@ -13,7 +12,7 @@ import itertools
 
 
 #SIDHYA CHANGE
-def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
+def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma):
     term = int(param_pair[0])
     rho = param_pair[1]
     
@@ -21,10 +20,10 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
 
     # adj income
     #SIDHYA CHANGE
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim, alt_deg)
 
     # get conditional survival probabilities
-    cond_prob = surv_prob.loc[START_AGE:END_AGE - 1, 'CSP']  # 22:99
+    cond_prob = surv_prob.loc[start_ages[alt_deg]:END_AGE - 1, 'CSP']  # 22:99
     cond_prob = cond_prob.values
 
     ###########################################################################
@@ -36,7 +35,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
-    c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim)
+    c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim, alt_deg)
     c_func_df.to_excel(c_func_fp)
     v_func_df.to_excel(v_func_fp)
     ###########################################################################
@@ -44,7 +43,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
 
-    prob = surv_prob.loc[START_AGE:END_AGE, 'CSP'].cumprod().values
+    prob = surv_prob.loc[start_ages[alt_deg]:END_AGE, 'CSP'].cumprod().values
 
     c_ce, _ = cal_certainty_equi(prob, c_proc, gamma)
     #SIDHYA CHANGE
@@ -54,7 +53,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     return term, rho, gamma, c_ce
 
 
-def main(version, id_fn, gamma):
+def main(version, id_fn, alt_deg, gamma):
     assert version == 'ISA_MC_from_ids'
     start_time = time.time()
 
@@ -71,32 +70,31 @@ def main(version, id_fn, gamma):
     ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
-    age_coeff, std, surv_prob, ids, n_sim = read_input_data(income_fp, mortal_fp, id_fn)
+    age_coeff, std, surv_prob, ids, n_sim = read_input_data(income_fp, mortal_fp, id_fn, alt_deg)
 
 
     ###########################################################################
     #              Setup - income process & std & survival prob               #
     ###########################################################################
-    income_bf_ret = cal_income(age_coeff)
+    income_bf_ret = cal_income(age_coeff, alt_deg)
 
     # get std
-    sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[AltDeg]]
-    sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[AltDeg]]
+    sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[alt_deg]]
+    sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[alt_deg]]
     #SIDHYA CHANGE
     isa_params = pd.read_excel(isa_fp)
     isa_params = isa_params[["Term", "1-rho"]].copy()
     #SIDHYA CHANGE
     param_pair = list(isa_params.values)
-    fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim]]
+    fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]]
 
     if isinstance(gamma, float):
         gamma = [gamma]
 
     search_args = list(itertools.product(param_pair, *fixed_args, gamma))
 
-    #print(param_pair)
-    #export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma[0])
-
+    # print(param_pair)
+    # export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma[0])
 
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
@@ -106,10 +104,11 @@ def main(version, id_fn, gamma):
 
     # Params check
     print("--- %s seconds ---" % (time.time() - start_time))
-    print('AltDeg: ', AltDeg)
+    print('AltDeg: ', alt_deg)
+    print('n_sim ', n_sim )
     print('permanent shock: ', sigma_perm)
     print('transitory shock: ', sigma_tran)
-    print('lambda: ', ret_frac[AltDeg])
-    print('theta: ',  unemp_frac[AltDeg])
-    print('pi: ', unempl_rate[AltDeg])
+    print('lambda: ', ret_frac[alt_deg])
+    print('theta: ',  unemp_frac[alt_deg])
+    print('pi: ', unemp_rate[alt_deg])
     print('W0: ', INIT_WEALTH)
