@@ -15,7 +15,10 @@ import itertools
 def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma):
     term = int(param_pair[0])
     rho = param_pair[1]
-    
+    if alt_deg == 3:
+        rho = rho/2
+    else:
+        assert alt_deg == 4
     start = time.time()
 
     # adj income

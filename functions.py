@@ -31,7 +31,7 @@ def cal_income(coeffs, alt_deg):
 
 def read_input_data(income_fp, mortal_fp, id_fn, alt_deg):
     ids = pd.read_excel(id_fn)
-    ids = ids[ids['AltDeg']==education_level[alt_deg]]
+    ids = ids[ids['AltDeg'] == education_level[alt_deg]]
     n_sim = len(ids)
     age_coeff_and_var = pd.ExcelFile(income_fp)
     # age coefficients
