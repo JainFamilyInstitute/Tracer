@@ -98,6 +98,15 @@ def main(version, id_fn, alt_deg, gamma):
 
     # print(param_pair)
     # export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma[0])
+    print('AltDeg: ', alt_deg)
+    print('n_sim ', n_sim)
+    print('permanent shock: ', sigma_perm)
+    print('transitory shock: ', sigma_tran)
+    print('lambda: ', ret_frac[alt_deg])
+    print('theta: ', unemp_frac[alt_deg])
+    print('pi: ', unemp_rate[alt_deg])
+    print('W0: ', INIT_WEALTH)
+    print('[income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]: ', fixed_args)
 
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
@@ -107,11 +116,4 @@ def main(version, id_fn, alt_deg, gamma):
 
     # Params check
     print("--- %s seconds ---" % (time.time() - start_time))
-    print('AltDeg: ', alt_deg)
-    print('n_sim ', n_sim )
-    print('permanent shock: ', sigma_perm)
-    print('transitory shock: ', sigma_tran)
-    print('lambda: ', ret_frac[alt_deg])
-    print('theta: ',  unemp_frac[alt_deg])
-    print('pi: ', unemp_rate[alt_deg])
-    print('W0: ', INIT_WEALTH)
+
