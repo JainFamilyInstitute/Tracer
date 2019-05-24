@@ -38,7 +38,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     # shortcut:
     # c_func_df = pd.read_excel(c_func_fp)
     # v_func_df = pd.read_excel(v_func_fp)
-    c_func_df, v_func_df = dp_solver(adj_income, cond_prob, gamma, n_sim, alt_deg)
+    c_func_df, v_func_df = dp_solver(adj_income=adj_income, cond_prob=cond_prob, gamma=gamma, n_sim=n_sim, alt_deg=alt_deg)
     c_func_df.to_excel(c_func_fp)
     v_func_df.to_excel(v_func_fp)
     ###########################################################################

@@ -5,7 +5,7 @@ from functions import utility, exp_val_new
 from constants import start_ages, END_AGE, LOWER_BOUND_W, UPPER_BOUND_W, gamma_exp_frac, N_W, N_C, R, DELTA
 
 
-def dp_solver(Y, prob, gamma, alt_deg, n_sim):
+def dp_solver(*, adj_income, cond_prob, gamma, n_sim, alt_deg):
     ###########################################################################
     #                                Setup                                    #
     ###########################################################################
@@ -46,9 +46,9 @@ def dp_solver(Y, prob, gamma, alt_deg, n_sim):
             savings_incr = savings * (1 + R)
             savings_incr = savings_incr[None].T
 
-            expected_value = exp_val_new(Y[:, t], savings_incr, grid_w, v[0, :], n_sim)
+            expected_value = exp_val_new(adj_income[:, t], savings_incr, grid_w, v[0, :], n_sim)
 
-            v_array = u_r + DELTA * prob[t] * expected_value    # v_array has size N_C-by-1
+            v_array = u_r + DELTA * cond_prob[t] * expected_value    # v_array has size N_C-by-1
             v[1, i] = np.max(v_array)
             pos = np.argmax(v_array)
             c[1, i] = consmp[pos]
