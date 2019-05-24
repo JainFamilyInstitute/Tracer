@@ -17,8 +17,14 @@ MU = 0                    # expectation of income shocks
 #N_SIM = 10000            # number of draws
 INIT_WEALTH = 0
 
-AltDeg = 4
+#AltDeg = 4
 run_dp = True
+
+start_ages = {
+    2: 18,
+    3: 20,
+    4: 22
+}
 
 education_level = {
     2: 'High School Graduates',

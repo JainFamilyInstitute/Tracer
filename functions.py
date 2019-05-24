@@ -30,7 +30,9 @@ def cal_income(coeffs):
     return income
 
 
-def read_input_data(income_fp, mortal_fp, original_income_fp):
+def read_input_data(income_fp, mortal_fp, id_fn):
+    ids = pd.read_excel(id_fn)
+
     age_coeff_and_var = pd.ExcelFile(income_fp)
     # age coefficients
     age_coeff = pd.read_excel(age_coeff_and_var, sheet_name='Coefficients', index_col=0)

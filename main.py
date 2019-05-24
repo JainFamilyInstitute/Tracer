@@ -54,7 +54,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     return term, rho, gamma, c_ce
 
 
-def main(version, n_sim, gamma):
+def main(version, id_fn, gamma):
     assert version == 'ISA_MC_from_ids'
     start_time = time.time()
 
@@ -71,7 +71,7 @@ def main(version, n_sim, gamma):
     ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
-    age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp, ids_fp)
+    age_coeff, std, surv_prob, ids, n_sim = read_input_data(income_fp, mortal_fp, id_fn)
 
 
     ###########################################################################
