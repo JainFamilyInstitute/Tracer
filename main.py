@@ -55,7 +55,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
 
 
 def main(version, n_sim, gamma):
-    assert version == 'ISA_MC'
+    assert version == 'ISA_MC_from_ids'
     start_time = time.time()
 
     ###########################################################################
@@ -71,7 +71,7 @@ def main(version, n_sim, gamma):
     ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
-    age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp)
+    age_coeff, std, surv_prob = read_input_data(income_fp, mortal_fp, ids_fp)
 
 
     ###########################################################################
@@ -93,6 +93,11 @@ def main(version, n_sim, gamma):
         gamma = [gamma]
 
     search_args = list(itertools.product(param_pair, *fixed_args, gamma))
+
+    #print(param_pair)
+    #export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma[0])
+
+
     with mp.Pool(processes=mp.cpu_count()) as p:
         c_ce = p.starmap(run_model, search_args)
 

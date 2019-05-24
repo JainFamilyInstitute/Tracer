@@ -30,13 +30,13 @@ def cal_income(coeffs):
     return income
 
 
-def read_input_data(income_fp, mortal_fp):
+def read_input_data(income_fp, mortal_fp, original_income_fp):
     age_coeff_and_var = pd.ExcelFile(income_fp)
     # age coefficients
-    age_coeff = pd.read_excel(age_coeff_and_var, sheet_name='Coefficients')
+    age_coeff = pd.read_excel(age_coeff_and_var, sheet_name='Coefficients', index_col=0)
 
     # decomposed variance
-    std = pd.read_excel(age_coeff_and_var, sheet_name='Variance', header=[1, 2])
+    std = pd.read_excel(age_coeff_and_var, sheet_name='Variance', header=[1, 2], index_col=0)
     std.reset_index(inplace=True)
     std.drop(std.columns[0], axis=1, inplace=True)
     std.drop([1, 3], inplace=True)
@@ -45,6 +45,8 @@ def read_input_data(income_fp, mortal_fp):
     # conditional survival probabilities
     cond_prob = pd.read_excel(mortal_fp)
     cond_prob.set_index('AGE', inplace=True)
+
+
 
     return age_coeff, std, cond_prob
 
@@ -100,5 +102,13 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     ev = v_w.mean(axis=0)
     return ev[None].T
 
+def export_incomes(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, gamma):
+    term = int(param_pair[0])
+    rho = param_pair[1]
 
 
+    # adj income
+    #SIDHYA CHANGE
+    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim)
+
+    pd.DataFrame(data=adj_income).to_csv('adj_income.csv')
