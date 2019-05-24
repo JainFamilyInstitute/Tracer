@@ -106,6 +106,8 @@ def main(version, id_fn, alt_deg, gamma):
     print('theta: ', unemp_frac[alt_deg])
     print('pi: ', unemp_rate[alt_deg])
     print('W0: ', INIT_WEALTH)
+    print('term: ', param_pair[0])
+    print('rho: ', param_pair[1])
     print('[income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]: ', fixed_args)
 
     with mp.Pool(processes=mp.cpu_count()) as p:
