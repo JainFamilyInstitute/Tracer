@@ -57,7 +57,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     return term, rho, gamma, c_ce
 
 
-def main(id_fp, alt_degs, gamma):
+def main(id_fp, alt_degs, gammas):
     start_time = time.time()
 
     ###########################################################################
@@ -78,6 +78,8 @@ def main(id_fp, alt_degs, gamma):
     age_coeff = read_age_coeffs(income_fp)
     std = read_variance(income_fp)
     surv_prob = read_survival(mortal_fp)
+
+    # TODO alt_deg => alt_degs, separate methods for isa, debt
     id_dict = {alt_deg : read_ids_for_alt_deg(id_fp = id_fp, alt_deg) for alt_deg in alt_degs}
     
 
@@ -97,13 +99,13 @@ def main(id_fp, alt_degs, gamma):
     param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]]
 
-    if isinstance(gamma, float):
-        gamma = [gamma]
+    if isinstance(gammas, float):
+        gammas = [gammas]
 
-    search_args = list(itertools.product(param_pair, *fixed_args, gamma))
+    search_args = list(itertools.product(param_pair, *fixed_args, gammas))
 
     # print(param_pair)
-    # export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma[0])
+    # export_incomes(param_pair[0], income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gammas[0])
     print('AltDeg: ', alt_deg)
     print('n_sim ', n_sim)
     print('permanent shock: ', sigma_perm)
