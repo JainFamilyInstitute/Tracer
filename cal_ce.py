@@ -55,20 +55,19 @@ def generate_consumption_process(inc, c_func_df, n_sim, start_age):
 
 
 def cal_certainty_equi(prob, c, gamma):
-
     # discount factor
     years = END_AGE - start_age + 1
     delta = np.ones((years, 1)) * DELTA
     delta[0] = 1
     delta = np.cumprod(delta)
-
     util_c = np.apply_along_axis(utility, 1, c, gamma)
     simu_util = np.sum(np.multiply(util_c[:, :44], (delta * prob)[:44]), axis=1)
-
+    
     if gamma == 1:
         c_ce = np.exp(np.mean(simu_util) / np.sum((delta * prob)[:44]))
     else:
         c_ce = ((1 - gamma) * np.mean(simu_util) / np.sum((delta * prob)[:44]))**(1 / (1-gamma))
+    
     total_w_ce = prob[:44].sum() * c_ce   # 42.7
 
     return c_ce, total_w_ce
