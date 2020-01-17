@@ -8,11 +8,14 @@ LOWER_BOUND_W = 1         # lower bound of wealth
 UPPER_BOUND_W = 15000000    # upper bound of wealth
 N_C = 1501
 LOWER_BOUND_C = 0
-R = 0.02                  # risk-free rate
-DELTA = 0.99              # discount factor
-MU = 0                    # expectation of income shocks
-INIT_WEALTH = 0
-
+R = 0.02                    # risk-free rate
+DELTA = 0.99                # discount factor
+MU = 0                      # expectation of income shocks
+INIT_WEALTH = 0             #
+PVT_MTPLR = 2.0             # poverty multiplier
+PVT_LEVEL = 10830           # poverty level
+TERM_EXT = 5                # number of term extensions for ISA
+NOMINAL_CAP_MTPLR = 2.5     # nominal cap multiplier for ISA
 run_dp = True
 
 start_ages = {
