@@ -15,11 +15,13 @@ def cal_income(coeffs, alt_deg):
 
 def base_income_process(income, sigma_perm, sigma_tran, n_sim, alt_deg):
     # generate random walk and normal r.v.
+    # NB: volatility reduction in sigma_perm, sigma_tran
     np.random.seed(0)
-    rn_perm = np.random.normal(MU, sigma_perm, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
+    
+    rn_perm = np.random.normal(MU, 0.75*sigma_perm, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
     rand_walk = np.cumsum(rn_perm, axis=1)
     np.random.seed(1)
-    rn_tran = np.random.normal(MU, sigma_tran, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
+    rn_tran = np.random.normal(MU, 0.75*sigma_tran, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
     inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
 
     # - retirement

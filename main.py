@@ -94,7 +94,7 @@ def main(id_fp, alt_degs, gammas):
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[alt_deg]]
     #SIDHYA CHANGE
     isa_params = pd.read_excel(isa_fp)
-    isa_params = isa_params[["Term", "1-rho"]].copy()
+    isa_params = isa_params[["Term", "rho"]].copy()
     #SIDHYA CHANGE
     param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]]
