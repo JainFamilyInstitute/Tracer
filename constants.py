@@ -1,7 +1,7 @@
 ###########################################################################
 #                            Set Constants                                #
 ###########################################################################
-END_AGE = 100             #
+END_AGE = 100             
 RETIRE_AGE = 65           # retirement age
 N_W = 501
 LOWER_BOUND_W = 1         # lower bound of wealth
@@ -21,6 +21,7 @@ start_ages = {
     4: 22
 }
 
+# alt_deg to education level map
 education_level = {
     2: 'High School Graduates',
     3: 'Some College',
@@ -47,11 +48,6 @@ unemp_rate = {
     3: 0.1132,
     4: 0.0703
 }
-
-#SIDHYA CHANGE
-# rho
-#rho = 0.900796641891997
-#TERM = 10
 
 # expanding factor
 gamma_exp_frac = {
