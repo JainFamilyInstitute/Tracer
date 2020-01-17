@@ -1,7 +1,7 @@
 import os
 import time
 import pandas as pd
-from input_readers import  read_ids_for_alt_deg, read_age_coeffs, read_variance, read_survival
+from file_handlers import  read_ids_for_alt_deg, read_age_coeffs, read_variance, read_survival
 from income_process import adj_income_process, cal_income
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
@@ -45,7 +45,7 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     ###########################################################################
     #        CE - calculate consumption process & certainty equivalent        #
     ###########################################################################
-    c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim)
+    c_proc, _ = generate_consumption_process(adj_income, c_func_df, n_sim, start_age)
 
     prob = surv_prob.loc[start_ages[alt_deg]:END_AGE, 'CSP'].cumprod().values
 

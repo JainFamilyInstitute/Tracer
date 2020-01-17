@@ -2,8 +2,8 @@ from scipy.interpolate import CubicSpline
 import pandas as pd
 import os
 import numpy as np
-from functions import utility
-from constants import *
+from utilities import utility
+from constants import UPPER_BOUND_W, END_AGE, INIT_WEALTH, DELTA
 
 
 # policy functions: C_t(W_t)
@@ -21,23 +21,23 @@ def c_func(c_df, w, age):
     return c
 
 
-def generate_consumption_process(inc, c_func_df, N_SIM):
+def generate_consumption_process(inc, c_func_df, n_sim, start_age):
     """ Calculating the certainty equivalent annual consumption and life time wealth"""
 
-    YEARS = END_AGE - START_AGE + 1
+    years = END_AGE - start_age + 1
 
     ###########################################################################
     #               COH_t+1 = (1 + R)*(COH_t - C_t) + Y_t+1                   #
     #                wealth = (1 + R)*(COH_t - C_t)                           #
     ###########################################################################
-    cash_on_hand = np.zeros((N_SIM, YEARS))
-    c = np.zeros((N_SIM, YEARS))
+    cash_on_hand = np.zeros((n_sim, years))
+    c = np.zeros((n_sim, years))
 
     cash_on_hand[:, 0] = INIT_WEALTH + inc[:, 0]   # cash on hand at age 22
 
     # 0-77, calculate consumption from 22 to 99, cash on hand from 23 to 100
-    for t in range(YEARS - 1):
-        c[:, t] = c_func(c_func_df, cash_on_hand[:, t], t + START_AGE)
+    for t in range(years - 1):
+        c[:, t] = c_func(c_func_df, cash_on_hand[:, t], t + start_age)
         cash_on_hand[:, t+1] = (1 + R) * (cash_on_hand[:, t] - c[:, t]) + inc[:, t+1]  # 1-78
     c[:, -1] = c_func(c_func_df, cash_on_hand[:, -1], END_AGE)   # consumption at age 100
 
@@ -54,21 +54,21 @@ def generate_consumption_process(inc, c_func_df, N_SIM):
     return c, inc
 
 
-def cal_certainty_equi(prob, c, GAMMA):
+def cal_certainty_equi(prob, c, gamma):
 
     # discount factor
-    YEARS = END_AGE - START_AGE + 1
-    delta = np.ones((YEARS, 1)) * DELTA
+    years = END_AGE - start_age + 1
+    delta = np.ones((years, 1)) * DELTA
     delta[0] = 1
     delta = np.cumprod(delta)
 
-    util_c = np.apply_along_axis(utility, 1, c, GAMMA)
+    util_c = np.apply_along_axis(utility, 1, c, gamma)
     simu_util = np.sum(np.multiply(util_c[:, :44], (delta * prob)[:44]), axis=1)
 
-    if GAMMA == 1:
+    if gamma == 1:
         c_ce = np.exp(np.mean(simu_util) / np.sum((delta * prob)[:44]))
     else:
-        c_ce = ((1 - GAMMA) * np.mean(simu_util) / np.sum((delta * prob)[:44]))**(1 / (1-GAMMA))
+        c_ce = ((1 - gamma) * np.mean(simu_util) / np.sum((delta * prob)[:44]))**(1 / (1-gamma))
     total_w_ce = prob[:44].sum() * c_ce   # 42.7
 
     return c_ce, total_w_ce

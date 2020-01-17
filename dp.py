@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
-from functions import utility, exp_val_new
+from utilities import utility, exp_val_new
 from constants import start_ages, END_AGE, LOWER_BOUND_W, UPPER_BOUND_W, gamma_exp_frac, N_W, N_C, R, DELTA
 
 

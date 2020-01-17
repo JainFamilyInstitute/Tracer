@@ -1,8 +1,7 @@
 from scipy.interpolate import CubicSpline
-
 import numpy as np
 import pandas as pd
-from constants import unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, N_C, ret_frac
+from constants import N_C
 
 ###########################################################################
 #                              Functions                                  #
@@ -16,9 +15,9 @@ def utility(values, gamma):
         return values**(1-gamma) / (1-gamma)
 
 
-def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
+def exp_val_new(y, savings_incr, grid_w, v, n_sim):
 
-    COH = np.zeros((N_SIM, N_C))
+    COH = np.zeros((n_sim, N_C))
     COH[:] = np.squeeze(savings_incr)
     COH += y[None].T
 
@@ -31,8 +30,8 @@ def exp_val_new(y, savings_incr, grid_w, v, N_SIM):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((N_SIM, N_C))
-    for i in range(N_SIM):
+    v_w = np.zeros((n_sim, N_C))
+    for i in range(n_sim):
         v_w[i, :] = spline(COH[i, :])
 
     ev = v_w.mean(axis=0)
