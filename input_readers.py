@@ -1,12 +1,12 @@
 import pandas as pd
 
-def read_ids(id_fp, alt_deg):
+def read_ids_for_alt_deg(id_fp, alt_deg):
     # ids for specified alt_deg
     ids = pd.read_excel(id_fp)
     ids = ids[ids['AltDeg'] == education_level[alt_deg]]
     return ids
 
-def read_age_coeff(income_fp, mortal_fp):
+def read_age_coeff(income_fp):
     # age coefficients
     age_coeff = pd.read_excel(income_fp, sheet_name='Coefficients', index_col=0)
     return age_coeff

@@ -43,19 +43,19 @@ def adj_income_process_isa(Y, term, rho):
     return Y
 
 
-def adj_income_process_loan(Y, alt_deg, init_debt, p_bar):
+def adj_income_process_loan(Y, alt_deg, principal, payment):
      # adjust income with debt repayment
     D = np.zeros(Y.shape)
-    D[:, 0] = init_debt
+    D[:, 0] = principal
     P = np.zeros(Y.shape)
 
     for t in range(END_AGE - start_ages[alt_deg]):
-        cond1 = np.logical_and(Y[:, t] >= 2 * p_bar, D[:, t] >= p_bar)
-        cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < p_bar)
-        cond3 = np.logical_and(Y[:, t] < 2 * p_bar, D[:, t] >= p_bar)
-        cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < p_bar)
+        cond1 = np.logical_and(Y[:, t] >= 2 * payment, D[:, t] >= payment)
+        cond2 = np.logical_and(Y[:, t] >= 2 * D[:, t], D[:, t] < payment)
+        cond3 = np.logical_and(Y[:, t] < 2 * payment, D[:, t] >= payment)
+        cond4 = np.logical_and(Y[:, t] < 2 * D[:, t], D[:, t] < payment)
 
-        P[cond1, t] = p_bar
+        P[cond1, t] = payment
         P[cond2, t] = D[cond2, t] * (1 + rate)
         P[cond3, t] = Y[cond3, t] / 2
         P[cond4, t] = Y[cond4, t] / 2

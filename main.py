@@ -1,7 +1,8 @@
 import os
 import time
 import pandas as pd
-from functions import adj_income_process, read_input_data, cal_income
+from input_readers import  read_ids_for_alt_deg, read_age_coeffs, read_variance, read_survival
+from income_process import adj_income_process, cal_income
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
 from constants import start_ages, END_AGE, gamma_exp_frac, education_level, ret_frac, unemp_rate, unemp_frac, INIT_WEALTH
@@ -56,24 +57,29 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     return term, rho, gamma, c_ce
 
 
-def main(version, id_fn, alt_deg, gamma):
-    assert version == 'ISA_MC_from_ids'
+def main(id_fp, alt_degs, gamma):
     start_time = time.time()
 
     ###########################################################################
     #                      Setup - file path & raw data                       #
     ###########################################################################
-    income_fn = 'age_coefficients_and_var_May152019.xlsx'
-    surviv_fn = 'Conditional Survival Prob_May152019.xlsx'
+    income_fn = 'age_coefficients_and_var.xlsx'
+    surviv_fn = 'Conditional Survival Prob.xlsx'
     isa_fn = 'Loop on term and rho.xlsx'
+    debt_fn = 'Loop on Principal for Loan.xlsx'
     base_path = os.path.dirname(__file__)
     income_fp = os.path.join(base_path, 'data', income_fn)
     mortal_fp = os.path.join(base_path, 'data', surviv_fn)
     isa_fp = os.path.join(base_path, 'data', isa_fn)
+    debt_fp = os.path.join(base_path, 'data', debt_fn)
     ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
-    age_coeff, std, surv_prob, ids, n_sim = read_input_data(income_fp, mortal_fp, id_fn, alt_deg)
+    age_coeff = read_age_coeffs(income_fp)
+    std = read_variance(income_fp)
+    surv_prob = read_survival(mortal_fp)
+    id_dict = {alt_deg : read_ids_for_alt_deg(id_fp = id_fp, alt_deg) for alt_deg in alt_degs}
+    
 
 
     ###########################################################################

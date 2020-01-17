@@ -11,7 +11,6 @@ LOWER_BOUND_C = 0
 R = 0.02                  # risk-free rate
 DELTA = 0.99              # discount factor
 MU = 0                    # expectation of income shocks
-
 INIT_WEALTH = 0
 
 run_dp = True
