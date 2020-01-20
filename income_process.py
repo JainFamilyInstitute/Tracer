@@ -41,7 +41,7 @@ def base_income_process(*, income, sigma_perm, sigma_tran, n_sim, alt_deg):
 
 
 
-def adj_income_process_isa(*, Y, term, principal, rho):
+def income_adjustment_isa(*, Y, term, principal, share_pct):
     # adjust income with ISA
     inc_threshold = PVT_MTPLR * PVT_LEVEL
     term_ub = term + TERM_EXT
@@ -54,7 +54,7 @@ def adj_income_process_isa(*, Y, term, principal, rho):
     cond_zero_pmt = Y[:, 0] < inc_threshold
     P[cond_zero_pmt, 0] = 0
     cond_nonzero_pmt = np.logical_not(cond_zero_pmt)
-    P[cond_nonzero_pmt, 0] = np.minimum(Y[cond_nonzero_pmt, 0] * rho, nominal_cap[cond_nonzero_pmt])
+    P[cond_nonzero_pmt, 0] = np.minimum(Y[cond_nonzero_pmt, 0] * share_pct, nominal_cap[cond_nonzero_pmt])
     P_cumsum[:, 0] = P[:, 0]
 
     # P[:, 0] = np.where(cond_zero_pmt, 0, )
@@ -68,7 +68,7 @@ def adj_income_process_isa(*, Y, term, principal, rho):
         P[cond_zero_pmt, t] = 0
 
         cond_nonzero_pmt = np.logical_not(cond_zero_pmt)
-        P[cond_nonzero_pmt, t] = np.minimum(Y[cond_nonzero_pmt, t] * rho,
+        P[cond_nonzero_pmt, t] = np.minimum(Y[cond_nonzero_pmt, t] * share_pct,
                                             nominal_cap[cond_nonzero_pmt] - P_cumsum[cond_nonzero_pmt, t-1])
 
         P_cumsum[:, t] = P_cumsum[:, t-1] + P[:, t]
@@ -76,7 +76,7 @@ def adj_income_process_isa(*, Y, term, principal, rho):
     adj_Y = Y - P
     return adj_Y, P, Y
 
-def adj_income_process_loan(*, Y, alt_deg, principal, payment):
+def income_adjustment_loan(*, Y, alt_deg, principal, payment):
      # adjust income with debt repayment
     D = np.zeros(Y.shape)
     D[:, 0] = principal
@@ -97,3 +97,36 @@ def adj_income_process_loan(*, Y, alt_deg, principal, payment):
         D[cond2, t + 1] = 0
     adj_Y = Y - P
     return adj_Y
+
+def income_adjustment_idr(*, Y, alt_deg, principal, payment)
+    # def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, n_sim, path=None):
+    # adjust income with debt repayment
+    D = np.zeros(Y.shape)
+    D[:, 0] = INIT_DEBT
+
+    P = (Y - PL)
+    P = np.where(P < 0, 0, P)
+    P = P * 0.15   # income share percentage !!!
+    P[:, 20:] = 0
+
+    for t in range(END_AGE - START_AGE):
+        if t < 20:
+            cond0 = P[:, t] >= D[:, t]
+            P[cond0, t] = D[cond0, t]
+            # D[cond0, t] = 0
+            cond1 = np.logical_and(P[:, t] >= D[:, t] * rate, P[:, t] < D[:, t])
+            D[cond1, t + 1] = D[cond1, t] * (1 + rate) - P[cond1, t]
+            cond2 = P[:, t] < D[:, t] * rate
+            D[cond2, t + 1] = D[cond2, t] + (D[cond2, t] * rate - P[cond2, t]) / 2
+        else:
+            D[:, t] = 0
+
+    # for t in range(END_AGE - START_AGE):
+    #     if t < 20:
+    #         cond = D[:, t] < 0
+    #         P[cond, t-1] = D[cond, t-1]
+    #         D[cond, t] = 0
+
+    adj_Y = Y - P
+    return adj_Y, P, Y, D
+    # return Y, P, D
