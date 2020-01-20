@@ -65,17 +65,17 @@ def main(alt_degs, gammas):
     ###########################################################################
 
     # read raw data
-    age_coeff = read_age_coeffs()
+    age_coeffs = read_age_coeffs()
     std = read_variance()
     surv_prob = read_survival()
 
     # TODO alt_deg => alt_degs, separate methods for isa, debt
-    id_dict = {alt_deg : read_ids_for_alt_deg(alt_deg) for alt_deg in alt_degs}
+    ids = {alt_deg : read_ids_for_alt_deg(alt_deg) for alt_deg in alt_degs}
     
     ###########################################################################
     #              Setup - income process & std & survival prob               #
     ###########################################################################
-    income_bf_ret = cal_income(age_coeff, alt_deg)
+    income_bf_ret = cal_income(age_coeffs, alt_deg)
 
     # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[alt_deg]]
