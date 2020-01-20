@@ -2,20 +2,21 @@
 #                            Set Constants                                #
 ###########################################################################
 END_AGE = 100             
-RETIRE_AGE = 65           # retirement age
+RETIRE_AGE = 65                 # retirement age
 N_W = 501
-LOWER_BOUND_W = 1         # lower bound of wealth
-UPPER_BOUND_W = 15000000    # upper bound of wealth
+LOWER_BOUND_W = 1               # lower bound of wealth
+UPPER_BOUND_W = 15000000        # upper bound of wealth
 N_C = 1501
 LOWER_BOUND_C = 0
-R = 0.02                    # risk-free rate
-DELTA = 0.99                # discount factor
-MU = 0                      # expectation of income shocks
-INIT_WEALTH = 0             #
-PVT_MTPLR = 2.0             # poverty multiplier
-PVT_LEVEL = 10830           # poverty level
-TERM_EXT = 5                # number of term extensions for ISA
-NOMINAL_CAP_MTPLR = 2.5     # nominal cap multiplier for ISA
+R = 0.02                        # risk-free rate
+DELTA = 0.99                    # discount factor
+MU = 0                          # expectation of income shocks
+INIT_WEALTH = 0                 #
+ISA_POVERTY_MULTIPLIER = 2.0    # poverty multiplier for ISA lower threshold
+IDR_POVERTY_MULTIPLIER = 1.5    # poverty multiplier for IDR
+POVERTY_LEVEL = 10830           # poverty level
+TERM_EXT = 5                    # number of term extensions for ISA
+NOMINAL_CAP_MULTIPLIER = 2.5         # nominal cap multiplier for ISA
 run_dp = True
 
 start_ages = {

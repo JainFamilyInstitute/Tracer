@@ -1,4 +1,4 @@
-from constants import unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, N_C, ret_frac, PVT_MTPLR, PVT_LEVEL, TERM_EXT, NOMINAL_CAP_MTPLR
+from constants import unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, ret_frac, ISA_POVERTY_MULTIPLIER, IDR_POVERTY_MULTIPLIER, POVERTY_LEVEL, TERM_EXT, NOMINAL_CAP_MULTIPLIER
 from scipy.stats import bernoulli
 
 def cal_income(coeffs, alt_deg):
@@ -39,19 +39,20 @@ def base_income_process(*, income, sigma_perm, sigma_tran, n_sim, alt_deg):
     Y = np.multiply(inc_with_inc_risk, bern.T)
     return Y
 
+def income_adjustment_trivial(*, Y, *args, **kwargs):
+    return Y
 
-
-def income_adjustment_isa(*, Y, term, principal, share_pct):
+def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, *args, **kwargs):
     # adjust income with ISA
-    inc_threshold = PVT_MTPLR * PVT_LEVEL
+    income_threshold = ISA_POVERTY_MULTIPLIER * POVERTY_LEVEL
     term_ub = term + TERM_EXT
 
-    nominal_cap = np.ones(n_sim) * NOMINAL_CAP_MTPLR * principal
+    nominal_cap = np.ones(n_sim) * NOMINAL_CAP_MULTIPLIER * principal
     P = np.zeros_like(Y)
     P_cumsum = np.zeros_like(Y)
 
     # t = 0
-    cond_zero_pmt = Y[:, 0] < inc_threshold
+    cond_zero_pmt = Y[:, 0] < income_threshold
     P[cond_zero_pmt, 0] = 0
     cond_nonzero_pmt = np.logical_not(cond_zero_pmt)
     P[cond_nonzero_pmt, 0] = np.minimum(Y[cond_nonzero_pmt, 0] * share_pct, nominal_cap[cond_nonzero_pmt])
@@ -59,9 +60,9 @@ def income_adjustment_isa(*, Y, term, principal, share_pct):
 
     # P[:, 0] = np.where(cond_zero_pmt, 0, )
 
-    for t in range(1, END_AGE - START_AGE + 1):
+    for t in range(1, END_AGE - start_ages[alt_deg] + 1):
 
-        cond1 = Y[:, t] < inc_threshold
+        cond1 = Y[:, t] < income_threshold
         cond2 = np.count_nonzero(P[:, :t], axis=1) >= term      # count non-zero from 0 to t-1
         cond3 = np.array([True if t >= term_ub else False] * n_sim)
         cond_zero_pmt = np.logical_or(np.logical_or(cond1, cond2), cond3)
@@ -74,7 +75,8 @@ def income_adjustment_isa(*, Y, term, principal, share_pct):
         P_cumsum[:, t] = P_cumsum[:, t-1] + P[:, t]
 
     adj_Y = Y - P
-    return adj_Y, P, Y
+    return adj_Y
+    # return adj_Y, P, Y
 
 def income_adjustment_loan(*, Y, alt_deg, principal, payment):
      # adjust income with debt repayment
@@ -104,12 +106,14 @@ def income_adjustment_idr(*, Y, alt_deg, principal, payment)
     D = np.zeros(Y.shape)
     D[:, 0] = INIT_DEBT
 
-    P = (Y - PL)
+    idr_cutoff = IDR_POVERTY_MULTIPLIER * POVERTY_LEVEL
+
+    P = (Y - idr_cutoff)
     P = np.where(P < 0, 0, P)
     P = P * 0.15   # income share percentage !!!
     P[:, 20:] = 0
 
-    for t in range(END_AGE - START_AGE):
+    for t in range(END_AGE - start_ages[alt_deg]):
         if t < 20:
             cond0 = P[:, t] >= D[:, t]
             P[cond0, t] = D[cond0, t]
@@ -121,12 +125,8 @@ def income_adjustment_idr(*, Y, alt_deg, principal, payment)
         else:
             D[:, t] = 0
 
-    # for t in range(END_AGE - START_AGE):
-    #     if t < 20:
-    #         cond = D[:, t] < 0
-    #         P[cond, t-1] = D[cond, t-1]
-    #         D[cond, t] = 0
 
     adj_Y = Y - P
-    return adj_Y, P, Y, D
+    return adj_Y
+    # return adj_Y, P, Y, D
     # return Y, P, D
