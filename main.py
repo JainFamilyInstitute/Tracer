@@ -57,33 +57,21 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     return term, rho, gamma, c_ce
 
 
-def main(id_fp, alt_degs, gammas):
+def main(alt_degs, gammas):
     start_time = time.time()
 
     ###########################################################################
     #                      Setup - file path & raw data                       #
     ###########################################################################
-    income_fn = 'age_coefficients_and_var.xlsx'
-    surviv_fn = 'Conditional Survival Prob.xlsx'
-    isa_fn = 'Loop on term and rho.xlsx'
-    debt_fn = 'Loop on Principal for Loan.xlsx'
-    base_path = os.path.dirname(__file__)
-    income_fp = os.path.join(base_path, 'data', income_fn)
-    mortal_fp = os.path.join(base_path, 'data', surviv_fn)
-    isa_fp = os.path.join(base_path, 'data', isa_fn)
-    debt_fp = os.path.join(base_path, 'data', debt_fn)
-    ce_fp = os.path.join(base_path, 'results', 'ce.xlsx')
 
     # read raw data
-    age_coeff = read_age_coeffs(income_fp)
-    std = read_variance(income_fp)
-    surv_prob = read_survival(mortal_fp)
+    age_coeff = read_age_coeffs()
+    std = read_variance()
+    surv_prob = read_survival()
 
     # TODO alt_deg => alt_degs, separate methods for isa, debt
-    id_dict = {alt_deg : read_ids_for_alt_deg(id_fp = id_fp, alt_deg) for alt_deg in alt_degs}
+    id_dict = {alt_deg : read_ids_for_alt_deg(alt_deg) for alt_deg in alt_degs}
     
-
-
     ###########################################################################
     #              Setup - income process & std & survival prob               #
     ###########################################################################
@@ -92,7 +80,8 @@ def main(id_fp, alt_degs, gammas):
     # get std
     sigma_perm = std.loc['sigma_permanent', 'Labor Income Only'][education_level[alt_deg]]
     sigma_tran = std.loc['sigma_transitory', 'Labor Income Only'][education_level[alt_deg]]
-    #SIDHYA CHANGE
+    
+    ## TODO isa_params
     isa_params = pd.read_excel(isa_fp)
     isa_params = isa_params[["Term", "rho"]].copy()
     #SIDHYA CHANGE
