@@ -16,8 +16,16 @@ ISA_POVERTY_MULTIPLIER = 2.0    # poverty multiplier for ISA lower threshold
 IDR_POVERTY_MULTIPLIER = 1.5    # poverty multiplier for IDR
 POVERTY_LEVEL = 10830           # poverty level
 TERM_EXT = 5                    # number of term extensions for ISA
-NOMINAL_CAP_MULTIPLIER = 2.5         # nominal cap multiplier for ISA
+NOMINAL_CAP_MULTIPLIER = 2.5    # nominal cap multiplier for ISA
 run_dp = True
+
+# file names
+income_fn = 'age_coefficients_and_var.xlsx'
+surviv_fn = 'Conditional Survival Prob.xlsx'
+isa_loop_fn = 'Loop on term and rho.xlsx'
+debt_loop_fn = 'Loop on Principal for Loan.xlsx'
+id_fn = "Mixture_IDS.xls"
+ce_fn = 'ce.xlsx'
 
 start_ages = {
     2: 18,
