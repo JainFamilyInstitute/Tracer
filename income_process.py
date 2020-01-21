@@ -1,8 +1,19 @@
+import numpy as np
 from constants import unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, ret_frac, ISA_POVERTY_MULTIPLIER, IDR_POVERTY_MULTIPLIER, POVERTY_LEVEL, TERM_EXT, NOMINAL_CAP_MULTIPLIER
+from file_handlers import read_ids, read_age_coeffs, read_variances
 from scipy.stats import bernoulli
 
-def cal_income(coeffs, alt_deg):
-    coeff_this_group = coeffs.loc[education_level[alt_deg]]
+def college_income_process():
+    # generate incomes for mixture of students
+    ids = {}
+    base_incomes = {}
+    for alt_deg in [3,4]: # 3 = some college; 4 = college graduate
+        ids[alt_deg] = read_ids(alt_deg=alt_deg)
+        base_incomes[alt_deg] = base_income_process(n_sim=len(ids[alt_deg]), alt_deg=alt_deg)
+    return base_incomes
+
+def init_income_process(alt_deg):
+    coeff_this_group = read_age_coeffs(alt_deg)
     a  = coeff_this_group['a']
     b1 = coeff_this_group['b1']
     b2 = coeff_this_group['b2']
@@ -13,11 +24,13 @@ def cal_income(coeffs, alt_deg):
     income = (a + b1 * ages + b2 * ages**2 + b3 * ages**3)  # 0:43, 22:65
     return income
 
-def base_income_process(*, income, sigma_perm, sigma_tran, n_sim, alt_deg):
+def base_income_process(*, n_sim, alt_deg):
     # generate random walk and normal r.v.
     # NB: volatility reduction in sigma_perm, sigma_tran
-    np.random.seed(0)
+    income = init_income_process(alt_deg)
+    sigma_perm, sigma_tran = read_variances(alt_deg)
     
+    np.random.seed(0)
     rn_perm = np.random.normal(MU, 0.75*sigma_perm, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
     rand_walk = np.cumsum(rn_perm, axis=1)
     np.random.seed(1)
@@ -39,10 +52,10 @@ def base_income_process(*, income, sigma_perm, sigma_tran, n_sim, alt_deg):
     Y = np.multiply(inc_with_inc_risk, bern.T)
     return Y
 
-def income_adjustment_trivial(*, Y, *args, **kwargs):
+def income_adjustment_trivial(*, Y, **kwargs):
     return Y
 
-def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, *args, **kwargs):
+def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, **kwargs):
     # adjust income with ISA
     income_threshold = ISA_POVERTY_MULTIPLIER * POVERTY_LEVEL
     term_ub = term + TERM_EXT
@@ -78,7 +91,7 @@ def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, *args, **kw
     return adj_Y
     # return adj_Y, P, Y
 
-def income_adjustment_loan(*, Y, alt_deg, principal, payment):
+def income_adjustment_loan(*, Y, alt_deg, principal, payment, **kwargs):
      # adjust income with debt repayment
     D = np.zeros(Y.shape)
     D[:, 0] = principal
@@ -100,7 +113,7 @@ def income_adjustment_loan(*, Y, alt_deg, principal, payment):
     adj_Y = Y - P
     return adj_Y
 
-def income_adjustment_idr(*, Y, alt_deg, principal, payment)
+def income_adjustment_idr(*, Y, alt_deg, principal, payment, **kwargs):
     # def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, n_sim, path=None):
     # adjust income with debt repayment
     D = np.zeros(Y.shape)
