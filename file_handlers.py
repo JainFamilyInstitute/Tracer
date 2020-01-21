@@ -6,7 +6,7 @@ from constants import income_fn, surviv_fn, isa_loop_fn, debt_loop_fn, id_fn, ce
 # debt_loop_fp = os.path.join(base_path, 'data', debt_loop_fn)
 # ce_fp = os.path.join(base_path, 'results', ce_fn)
 
-def read_ids_for_alt_deg(alt_deg):
+def read_ids(alt_deg):
     # ids for specified alt_deg
     base_path = os.path.dirname(__file__)
     id_fp = os.path.join(base_path, 'data', id_fn)
@@ -21,7 +21,7 @@ def read_age_coeffs(alt_deg):
     coeff_df = pd.read_excel(income_fp, sheet_name='Coefficients', index_col=0)
     return coeff_df.loc[education_level[alt_deg]]
 
-def read_variance(alt_deg):
+def read_variances(alt_deg):
     # decomposed variance
     base_path = os.path.dirname(__file__)
     income_fp = os.path.join(base_path, 'data', income_fn)
