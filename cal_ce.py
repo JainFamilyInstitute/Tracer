@@ -55,12 +55,14 @@ def generate_consumption_process(inc, c_func_df, n_sim, start_age):
 
 
 def cal_certainty_equi(prob, c, gamma):
-    # discount factor
     years = END_AGE - start_age + 1
+    # time discount factor
+    # TODO: why are we giving effectively different time discounts for different alt_degs?
     delta = np.ones((years, 1)) * DELTA
     delta[0] = 1
     delta = np.cumprod(delta)
     util_c = np.apply_along_axis(utility, 1, c, gamma)
+    # TODO: where is 44 coming from?
     simu_util = np.sum(np.multiply(util_c[:, :44], (delta * prob)[:44]), axis=1)
     
     if gamma == 1:
