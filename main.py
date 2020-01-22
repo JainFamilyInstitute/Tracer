@@ -1,7 +1,7 @@
 import os
 import time
 import pandas as pd
-from file_handlers import  read_ids_for_alt_deg, read_age_coeffs, read_variance, read_survival
+from file_handlers import  read_ids, read_age_coeffs, read_variances, read_survival
 from income_process import adj_income_process, cal_income
 from dp import dp_solver
 from cal_ce import cal_certainty_equi, generate_consumption_process
@@ -56,6 +56,18 @@ def run_model(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base
     print(f"------ {time.time() - start} seconds ------")
     return term, rho, gamma, c_ce
 
+###
+# for high school:
+    # for each gamma in [1,2,3,4]:
+            # calculate CE(gamma)
+# for each level in [high school, some college, college grad]:
+#   for each gamma in [1,2,3,4]:
+#       if highschool: calculate CE(gamma)
+#       otherwise:
+#           for each method in [idr, isa, loan, none]:
+#              choose the list of principals relevant for the education level
+#              which will be [5k, 10k, 15k .. 70k] for college grad, 1/2 for some college
+#              calc CE for combo of level, gamma, method, principal
 
 def main(alt_degs, gammas):
     start_time = time.time()
@@ -64,13 +76,27 @@ def main(alt_degs, gammas):
     #                      Setup - file path & raw data                       #
     ###########################################################################
 
+    if isinstance(gammas, float):
+        gammas = [gammas]
+    
     # read raw data
     age_coeffs = read_age_coeffs()
     std = read_variance()
     surv_prob = read_survival()
 
-    # TODO alt_deg => alt_degs, separate methods for isa, debt
     ids = {alt_deg : read_ids_for_alt_deg(alt_deg) for alt_deg in alt_degs}
+    
+    # do high school only first (since no method/financing variation)
+    # TODO
+
+    # now do college
+    col_degs = [x for x in alt_deg if x != 2] # exclude high school
+    methods = ['NONE', 'LOAN', 'ISA', 'IDR']
+    for alt_deg in col_degs:
+        for gamma in gammas:
+            for method in methods:
+                
+            
     
     ###########################################################################
     #              Setup - income process & std & survival prob               #
@@ -88,8 +114,6 @@ def main(alt_degs, gammas):
     param_pair = list(isa_params.values)
     fixed_args = [[x] for x in [income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg]]
 
-    if isinstance(gammas, float):
-        gammas = [gammas]
 
     search_args = list(itertools.product(param_pair, *fixed_args, gammas))
 
