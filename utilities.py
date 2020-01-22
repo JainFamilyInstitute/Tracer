@@ -1,7 +1,7 @@
 from scipy.interpolate import CubicSpline
 import numpy as np
 import pandas as pd
-from constants import N_C
+from constants import N_C, N_SIM
 
 ###########################################################################
 #                              Functions                                  #
@@ -15,9 +15,9 @@ def utility(values, gamma):
         return values**(1-gamma) / (1-gamma)
 
 
-def exp_val_new(y, savings_incr, grid_w, v, n_sim):
+def exp_val_new(y, savings_incr, grid_w, v):
 
-    COH = np.zeros((n_sim, N_C))
+    COH = np.zeros((N_SIM, N_C))
     COH[:] = np.squeeze(savings_incr)
     COH += y[None].T
 
@@ -30,21 +30,10 @@ def exp_val_new(y, savings_incr, grid_w, v, n_sim):
     # v_w = p.apply(spline, args=(COH,))
     # p.close()
 
-    v_w = np.zeros((n_sim, N_C))
-    for i in range(n_sim):
+    v_w = np.zeros((N_SIM, N_C))
+    for i in range(N_SIM):
         v_w[i, :] = spline(COH[i, :])
 
     ev = v_w.mean(axis=0)
     return ev[None].T
 
-
-def export_incomes(param_pair, income_bf_ret, sigma_perm, sigma_tran, surv_prob, base_path, n_sim, alt_deg, gamma):
-    term = int(param_pair[0])
-    rho = param_pair[1]
-
-
-    # adj income
-    #SIDHYA CHANGE
-    adj_income = adj_income_process(income_bf_ret, sigma_perm, sigma_tran, term, rho, n_sim, alt_deg)
-
-    pd.DataFrame(data=adj_income).to_csv('adj_income.csv')
