@@ -1,16 +1,8 @@
 import numpy as np
-from constants import unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, ret_frac, ISA_POVERTY_MULTIPLIER, IDR_POVERTY_MULTIPLIER, POVERTY_LEVEL, TERM_EXT, NOMINAL_CAP_MULTIPLIER
+from constants import N_SIM, unemp_frac, education_level, start_ages, RETIRE_AGE, MU, END_AGE, unemp_rate, ret_frac, ISA_POVERTY_MULTIPLIER, IDR_POVERTY_MULTIPLIER, POVERTY_LEVEL, TERM_EXT, NOMINAL_CAP_MULTIPLIER
 from file_handlers import read_ids, read_age_coeffs, read_variances
 from scipy.stats import bernoulli
 
-def college_income_process():
-    # generate incomes for mixture of students
-    ids = {}
-    base_incomes = {}
-    for alt_deg in [3,4]: # 3 = some college; 4 = college graduate
-        ids[alt_deg] = read_ids(alt_deg=alt_deg)
-        base_incomes[alt_deg] = base_income_process(n_sim=len(ids[alt_deg]), alt_deg=alt_deg)
-    return base_incomes
 
 def init_income_process(alt_deg):
     coeff_this_group = read_age_coeffs(alt_deg)
@@ -24,17 +16,17 @@ def init_income_process(alt_deg):
     income = (a + b1 * ages + b2 * ages**2 + b3 * ages**3)  # 0:43, 22:65
     return income
 
-def base_income_process(*, n_sim, alt_deg):
+def base_income_process(*, alt_deg):
     # generate random walk and normal r.v.
     # NB: volatility reduction in sigma_perm, sigma_tran
     income = init_income_process(alt_deg)
     sigma_perm, sigma_tran = read_variances(alt_deg)
     
     np.random.seed(0)
-    rn_perm = np.random.normal(MU, 0.75*sigma_perm, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
+    rn_perm = np.random.normal(MU, 0.75*sigma_perm, (N_SIM, RETIRE_AGE - start_ages[alt_deg] + 1))
     rand_walk = np.cumsum(rn_perm, axis=1)
     np.random.seed(1)
-    rn_tran = np.random.normal(MU, 0.75*sigma_tran, (n_sim, RETIRE_AGE - start_ages[alt_deg] + 1))
+    rn_tran = np.random.normal(MU, 0.75*sigma_tran, (N_SIM, RETIRE_AGE - start_ages[alt_deg] + 1))
     inc_with_inc_risk = np.multiply(np.exp(rand_walk) * np.exp(rn_tran), income)
 
     # - retirement
@@ -45,9 +37,9 @@ def base_income_process(*, n_sim, alt_deg):
     # generate bernoulli random variable
     np.random.seed(seed=2)
     p = 1 - unemp_rate[alt_deg]
-    r = bernoulli.rvs(p, size=(RETIRE_AGE - start_ages[alt_deg] + 1, n_sim)).astype(float)
+    r = bernoulli.rvs(p, size=(RETIRE_AGE - start_ages[alt_deg] + 1, N_SIM)).astype(float)
     r[r == 0] = unemp_frac[alt_deg]
-    ones = np.ones((END_AGE - RETIRE_AGE, n_sim))
+    ones = np.ones((END_AGE - RETIRE_AGE, N_SIM))
     bern = np.append(r, ones, axis=0)
     Y = np.multiply(inc_with_inc_risk, bern.T)
     return Y
@@ -60,7 +52,7 @@ def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, **kwargs):
     income_threshold = ISA_POVERTY_MULTIPLIER * POVERTY_LEVEL
     term_ub = term + TERM_EXT
 
-    nominal_cap = np.ones(n_sim) * NOMINAL_CAP_MULTIPLIER * principal
+    nominal_cap = np.ones(N_SIM) * NOMINAL_CAP_MULTIPLIER * principal
     P = np.zeros_like(Y)
     P_cumsum = np.zeros_like(Y)
 
@@ -77,7 +69,7 @@ def income_adjustment_isa(*, Y, alt_deg, term, principal, share_pct, **kwargs):
 
         cond1 = Y[:, t] < income_threshold
         cond2 = np.count_nonzero(P[:, :t], axis=1) >= term      # count non-zero from 0 to t-1
-        cond3 = np.array([True if t >= term_ub else False] * n_sim)
+        cond3 = np.array([True if t >= term_ub else False] * N_SIM)
         cond_zero_pmt = np.logical_or(np.logical_or(cond1, cond2), cond3)
         P[cond_zero_pmt, t] = 0
 
@@ -114,10 +106,10 @@ def income_adjustment_loan(*, Y, alt_deg, principal, payment, **kwargs):
     return adj_Y
 
 def income_adjustment_idr(*, Y, alt_deg, principal, payment, **kwargs):
-    # def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, n_sim, path=None):
+    # def adj_income_process(income, sigma_perm, sigma_tran, INIT_DEBT, N_SIM, path=None):
     # adjust income with debt repayment
     D = np.zeros(Y.shape)
-    D[:, 0] = INIT_DEBT
+    D[:, 0] = principal
 
     idr_cutoff = IDR_POVERTY_MULTIPLIER * POVERTY_LEVEL
 
